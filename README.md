@@ -1,5 +1,9 @@
 # ProjectOS
 
+---
+### ***Project Proposal [Proposal Doc 2.0](https://docs.google.com/document/d/1s6P1jKigG7nhK9zJfvxt6zMq2HzajbgMNnxF0CrcPnY/edit?tab=t.i1kznivnik42)***
+---
+
 ## Learning-Phase
 
 This repository is created to track the individual progress of each team member across multiple learning phases of ProjectOS.
