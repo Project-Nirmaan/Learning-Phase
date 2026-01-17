@@ -1,6 +1,6 @@
 # 🐧 Linux Commands & Concepts — Complete Notes
 
-## 1️⃣ ssh — Connect to remote server
+## 1️ ssh — Connect to remote server
 **Syntax**  
 `ssh username@server_ip -p port_number`
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 2️⃣ cd — Change directory
+## 2️ cd — Change directory
 `cd folder`          → move into folder  
 `cd folder/subfolder`  
 `cd ..`               → move up one directory  
@@ -27,7 +27,7 @@
 
 ---
 
-## 3️⃣ ls — List directory contents
+## 3️ ls — List directory contents
 `ls`                 → basic listing  
 `ls -l`              → long/detailed  
 `ls -a`              → include hidden files  
@@ -45,13 +45,13 @@
 
 ---
 
-## 4️⃣ pwd — Print working directory
+## 4️ pwd — Print working directory
 `pwd`  
 - Shows absolute path of current directory  
 
 ---
 
-## 5️⃣ cat — Concatenate / display files
+## 5️ cat — Concatenate / display files
 `cat file.txt`  
 `cat file1.txt file2.txt`
 
@@ -67,7 +67,7 @@
 
 ---
 
-## 6️⃣ file — Check file type
+## 6️ file — Check file type
 `file filename`  
 `file ./-filename`      → if starts with `-`  
 `file -- -filename`     → alternative
@@ -83,7 +83,7 @@
 
 ---
 
-## 7️⃣ find — Search for files by metadata
+## 7️ find — Search for files by metadata
 **Basics**  
 `find /path -type f`              → regular files only  
 `find /path -type d`              → directories only  
@@ -112,7 +112,7 @@
 
 ---
 
-## 8️⃣ grep — Search text inside files
+## 8️ grep — Search text inside files
 `grep "hello" file.txt`         → search in one file  
 `grep -R "hello" dir/`          → recursive  
 `grep -Rl "hello" dir/`         → recursive, filenames only  
@@ -124,7 +124,7 @@
 
 ---
 
-## 9️⃣ uniq — Filter duplicate lines
+## 9️ uniq — Filter duplicate lines
 `uniq file.txt`                → adjacent duplicates removed  
 `uniq -u file.txt`             → print only unique lines  
 `uniq -d file.txt`             → print only duplicates
@@ -138,15 +138,40 @@
 
 ---
 
-## 1️⃣0️⃣ sort — Sort lines
+## 1️0️ sort — Sort lines
 `sort file.txt`                → ascending  
 `sort -r file.txt`             → descending  
 `sort -n file.txt`             → numeric  
 `sort file.txt | uniq -u`      → unique lines globally  
 
 ---
+## 1️1️ grep — Pattern matching & filtering text
 
-## 1️⃣1️⃣ Permissions / Executability
+~~~bash
+grep "error" file.txt            # lines containing "error"
+grep -i "error" file.txt         # case-insensitive search
+grep -n "error" file.txt         # show line numbers
+grep -c "error" file.txt         # count matching lines
+grep -v "error" file.txt         # exclude matching lines
+grep -w "open" file.txt          # whole-word match only
+grep -r "error" /var/log/        # recursive search
+ps aux | grep "apache"           # filter command output
+grep -C 2 "error" file.txt       # show 2 lines before & after
+~~~
+
+**Important**
+- Supports regular expressions
+- Works with stdin (pipes) if no file is given
+- Commonly combined with other commands
+
+**Common combos**
+~~~bash
+grep "error" file.txt | sort | uniq
+grep "error" file.txt | sort | uniq | wc -l
+~~~
+---
+
+## 1️2 Permissions / Executability
 Check file permissions:  
 `ls -l file.txt`
 
@@ -162,7 +187,7 @@ Check file permissions:
 
 ---
 
-## 1️⃣2️⃣ Ownership
+## 1️3 Ownership
 - `-user username` → find by owner  
 - `-group groupname` → find by group  
 - Files can be owned by other users/groups  
@@ -170,7 +195,7 @@ Check file permissions:
 
 ---
 
-## 1️⃣3️⃣ Redirects & Pipes
+## 1️4 Redirects & Pipes
 - Redirect stdout to file: `> file`  
 - Redirect stderr: `2> file`  
 - Pipe: `|` → send output of one command to another  
@@ -181,8 +206,60 @@ Check file permissions:
 - Without `|`, you need temp file or rely on pre-sorted input  
 
 ---
+## 15 tar — Archive files
 
-## 1️⃣4️⃣ Special file symbols
+~~~bash
+tar -cf archive.tar file.txt            # create tar archive
+tar -tf archive.tar                     # list contents
+tar -xf archive.tar                     # extract archive
+tar -cvf archive.tar dir/               # create archive (verbose)
+tar -xvf archive.tar                    # extract (verbose)
+~~~
+
+**Important**
+- `-c` create, `-x` extract, `-t` list
+- `-f` specifies archive filename
+- Often combined with compression tools (gzip)
+
+---
+
+## 16 gzip — Compress files
+
+~~~bash
+gzip file.txt                           # compress (replaces file)
+gzip -k file.txt                        # keep original file
+gzip -d file.txt.gz                    # decompress
+gunzip file.txt.gz                     # decompress (alternative)
+gzip -r dir/                           # compress directory recursively
+~~~
+
+**Important**
+- Produces `.gz` files
+- Original file is removed unless `-k` is used
+- Works on single files (not archives)
+
+##  unzip — Extract ZIP archives
+
+~~~bash
+unzip archive.zip                      # extract zip file
+unzip archive.zip -d output_dir/       # extract to directory
+unzip -l archive.zip                   # list contents
+unzip -o archive.zip                   # overwrite existing files
+unzip -q archive.zip                   # quiet mode
+~~~
+
+**Important**
+- Used only for `.zip` archives
+- Use `zip` to create zip files
+
+**Common combos**
+~~~bash
+tar -czf archive.tar.gz dir/            # tar + gzip
+tar -xzf archive.tar.gz                 # extract tar.gz
+~~~
+---
+
+##  Special file symbols
 | Symbol | Meaning       |
 |--------|---------------|
 | /      | root          |
@@ -192,7 +269,7 @@ Check file permissions:
 
 ---
 
-## 1️⃣5️⃣ General Notes & Pro Tips
+##  General Notes & Pro Tips
 - Use `--` to stop option parsing for files starting with `-`  
   `cat -- -filename`  
   `file -- -filename`  
