@@ -38,6 +38,7 @@ Each member will store their work, notes, and learning resources in organized fo
 
 - Phase 1: How Does an OS Even Work?
 - Phase 2: Becoming a Linux "Power User"
+- Phase 2.5: The Shell Wizard
 - Phase 3: C Programming Journey
 - Phase 3.5: Bootloader & System Build
 - Phase 4: Team Up & Specialize
