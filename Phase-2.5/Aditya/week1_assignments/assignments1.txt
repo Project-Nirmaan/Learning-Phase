@@ -1,0 +1,37 @@
+(use -p to create parent directories  and file)and (tree to see the directory structure)
+1> mkdir -p project/build project/src proj/log
+2> tree project
+
+(touch is used to create files and echo is used to write in files)
+3> touch project/src/file1.txt project/build/Makefile project/log/debug.log
+
+4> echo "hello world" > project/src/file1.txt
+(create hardlinks)
+5> ln project/src/file1.txt project/hardlink.txt
+
+(create symbolic link)
+6> ln -s project/src/file1.txt project/symlink.txt
+
+(dlt original file)
+7> rm project/src/file1.txt
+
+(check if symlink is broken)
+8> ls -l project/symlink.txt
+
+(check inode number it will be same for hardlink and different for symlink)
+9> stat project/hardlink.txt
+10> stat project/symlink.txt
+
+(use ls -li to see the inode number)
+10>ls -li project/
+
+#) Explain inode behaviuor:-
+ans- the inode is the metadata of the file
+ it will be same for hardlink and different for symlink.
+
+ #) Explain why one link survives and one breaks:-
+ ans- because hardlink is the actual file and symlink is just a pointer to the file.
+
+ 
+
+
