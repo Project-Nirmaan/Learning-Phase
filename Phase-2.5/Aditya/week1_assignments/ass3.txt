@@ -1,0 +1,37 @@
+🎯 Assignment 3: Safe Backup Workflow
+
+1. Archiving with tar
+Command: tar -cvf archive.tar file1 file2 file3
+Purpose: Combines multiple files into a single archive file
+Options:
+  -c : Create a new archive
+  -v : Verbose mode (shows files being added)
+  -f : Specifies the archive filename
+
+
+2. Compression with gzip
+Command: gzip filename
+Purpose: Reduces file size using lossless compression
+Process:
+  Takes backup.tar and creates backup.tar.gz
+Note:
+  Original file is replaced by compressed version
+
+
+3. Timestamping with date command
+Command: $(date +%s)
+Purpose: Generates unique timestamp for version control
+Format:
+  %s gives seconds since Unix epoch (Jan 1, 1970)
+
+
+4. Verification with ls -la
+Command: ls -la
+Purpose: Lists all files with detailed information
+Information shown:
+  File permissions
+  Number of links
+  Owner and group
+  File size in bytes
+  Last modified date and time
+  Filename
