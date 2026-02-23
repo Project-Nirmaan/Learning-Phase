@@ -1,0 +1,67 @@
+🎯 Assignment 2: Permission Debugging Drill
+
+# PROBLEM: Removing execute permission from directory
+vboxuser@ubuntuabse:~$ chmod a-x sets
+vboxuser@ubuntuabse:~$ ls -la sets/filed.txt
+ls: cannot access 'sets/filed.txt': Permission denied
+vboxuser@ubuntuabse:~$ cd sets/filed.txt
+bash: cd: sets/filed.txt: Permission denied
+
+# THE FIX: Adding execute permission back
+vboxuser@ubuntuabse:~$ chmod a+x sets
+vboxuser@ubuntuabse:~$ ls -la sets/filed.txt
+ls: cannot access 'sets/filed.txt': No such file or directory
+vboxuser@ubuntuabse:~$ ls -la sets/pw/filed.txt
+-rw-rw-r-- 1 vboxuser vboxuser 84 Feb 21 17:13 sets/pw/filed.txt\
+
+THEORY: Execute (x) permission on directories allows users to enter (cd into) and traverse
+through them. Without it, you cannot access any contents inside, even if files have
+proper permissions.The error shows "Permission denied" when trying to list or cd
+into the directory.
+
+
+
+# PROBLEM: Removing read permission from user
+vboxuser@ubuntu:~/sets$ chmod u-r add/filep.txt
+vboxuser@ubuntu:~/sets$ cat add/filep.txt
+cat: add/filep.txt: Permission denied
+
+# THE FIX: Adding read permission back
+vboxuser@ubuntu:~/sets$ chmod u+r add/filep.txt
+vboxuser@ubuntu:~/sets$ cat add/filep.txt
+hello A
+
+THEORY: Read (r) permission controls whether a user can view file contents.
+When removed from user (owner), even the file owner cannot read it.
+This is a common mistake when trying to restrict access but forgetting to maintain owner access.
+
+
+
+# First, let's view the directory structure
+vboxuser@ubuntuabse:~/sets$ tree
+add
+filep.txt
+learn
+filek.txt
+os
+filea.txt
+pw
+filed.txt
+5 directories, 4 files
+
+# PROBLEM: Removing all permissions (rwx) from everyone
+vboxuser@ubuntuabse:~/sets$ chmod ugo-rwx os/filea.txt
+vboxuser@ubuntuabse:~/sets$ cat os/filea.txt
+cat: os/filea.txt: Permission denied
+
+# THE FIX: Adding all permissions back for everyone
+vboxuser@ubuntuabse:~/sets$ chmod ugo+rwx os/filea.txt
+vboxuser@ubuntuabse:~/sets$ cat os/filea.txt
+anupam,21,trader
+prashant,18,editor
+vaibhav,16,cse
+
+THEORY: ugo-rwx removes all permissions (read, write, execute) from User, Group, and Others.
+This makes the file completely inaccessible to everyone, including the owner.
+Adding back ugo+rwx restores full access.This demonstrates how file permissions can
+completely block access when misconfigured.
