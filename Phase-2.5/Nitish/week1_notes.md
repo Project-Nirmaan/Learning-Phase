@@ -519,3 +519,501 @@ rm file
 | Delete     | Remove reference, not data |
 
 ---
+
+# 🧠 Topic-3: Links (Hard & Symbolic Links)
+
+---
+
+## 1. Problem Statement
+
+We know:
+
+```text
+filename → inode → data
+```
+
+But:
+
+* Can one file have multiple names?
+* Can we reference files without copying data?
+* Can we create shortcuts?
+
+---
+
+## 2. Core Concept
+
+> Links allow multiple references to filesystem objects.
+
+---
+
+## 3. Hard Links
+
+---
+
+### Definition
+
+> A hard link is another name pointing to the **same inode**
+
+---
+
+### Command
+
+```bash
+ln fileA fileB
+```
+
+---
+
+### Internal Representation
+
+```text
+fileA ─┐
+       ├──> inode123 → data
+fileB ─┘
+```
+
+---
+
+### Properties
+
+| Property                      | Hard Link |
+| ----------------------------- | --------- |
+| Same inode                    | ✅         |
+| Same data                     | ✅         |
+| Link count increases          | ✅         |
+| Cross filesystem              | ❌         |
+| Works after original deletion | ✅         |
+
+---
+
+### Observations (Experiment)
+
+```bash
+echo "hello munna" > file1.txt
+ln file1.txt file2.txt
+ls -li
+```
+
+👉 Same inode observed
+
+```bash
+rm file1.txt
+cat file2.txt
+```
+
+👉 Data still exists
+
+---
+
+### Key Rule
+
+```text
+File is deleted only when:
+link_count == 0 AND no process is using it
+```
+
+---
+
+## 4. Symbolic Links (Soft Links)
+
+---
+
+### Definition
+
+> A symbolic link is a file that stores a **path to another file**
+
+---
+
+### Command
+
+```bash
+ln -s fileA file3
+```
+
+---
+
+### Internal Representation
+
+```text
+file3 → "fileA" (path string)
+```
+
+---
+
+### Properties
+
+| Property                   | Soft Link |
+| -------------------------- | --------- |
+| Same inode                 | ❌         |
+| Stores path                | ✅         |
+| Cross filesystem           | ✅         |
+| Breaks if original deleted | ✅         |
+
+---
+
+### Observations (Experiment)
+
+```bash
+ln -s file1.txt file3.txt
+ls -li
+```
+
+👉 Different inode, arrow shown
+
+```bash
+rm file1.txt
+cat file3.txt
+```
+
+👉 Broken link (dangling reference)
+
+---
+
+## 5. Hard Link vs Soft Link
+
+| Feature     | Hard Link   | Soft Link       |
+| ----------- | ----------- | --------------- |
+| Level       | Inode-level | Path-level      |
+| Dependency  | Independent | Dependent       |
+| Performance | Faster      | Slight overhead |
+| Safety      | Strong      | Can break       |
+
+---
+
+## 6. Why Hard Links Are Restricted
+
+Hard links cannot be created for directories.
+
+### Reason:
+
+```text
+Prevent cycles in filesystem graph
+```
+
+Example problem:
+
+```text
+dir1 → dir2 → dir1 (infinite loop)
+```
+
+---
+
+## 7. OS Design Insights
+
+---
+
+### 🔹 Identity vs Naming
+
+```text
+inode ≠ filename
+```
+
+This enables:
+
+* multiple names
+* flexible referencing
+
+---
+
+### 🔹 Reference Counting
+
+Each inode tracks:
+
+```text
+link_count
+```
+
+---
+
+### 🔹 Lazy Deletion
+
+Deletion occurs only when:
+
+* no references
+* no active usage
+
+---
+
+### 🔹 Filesystem is a Graph
+
+```text
+Directories → tree
+Files → graph (via hard links)
+```
+
+---
+
+## 8. Limitations & Improvements
+
+| Problem                | Possible Improvement         |
+| ---------------------- | ---------------------------- |
+| Broken symlinks        | Auto-validation              |
+| No cross-FS hard links | Global FS layer              |
+| Debug complexity       | Visualization tools          |
+
+---
+
+# 🧠 Topic-4: Viewing & Editing Files
+
+---
+
+## 1. Problem Statement
+
+Files are stored on disk, but:
+
+* How do we read them efficiently?
+* How do we handle large files?
+* How do programs interact with file data?
+
+---
+
+## 2. Core Concept
+
+> Files are accessed as **streams of bytes**
+
+---
+
+## 3. File Access Flow
+
+When running:
+
+```bash
+cat file.txt
+```
+
+Internally:
+
+```text
+open() → read() → write()
+```
+
+---
+
+### Data Flow
+
+```text
+Disk → Kernel Buffer → User Space → Terminal
+```
+
+---
+
+## 4. File Descriptor (CRITICAL)
+
+Each process maintains:
+
+```text
+FD Table (inside PCB)
+```
+
+---
+
+### Default File Descriptors
+
+| FD | Meaning |
+| -- | ------- |
+| 0  | stdin   |
+| 1  | stdout  |
+| 2  | stderr  |
+
+---
+
+### Example
+
+```bash
+cat file.txt
+```
+
+```text
+open(file) → fd=3  
+read(fd=3) → write(fd=1)
+```
+
+---
+
+## 5. Commands
+
+---
+
+### 🔹 cat
+
+```bash
+cat file.txt
+```
+
+* Reads entire file
+* Outputs to stdout
+* Not efficient for large files
+
+---
+
+### 🔹 less
+
+```bash
+less file.txt
+```
+
+* Lazy loading
+* Scrollable
+* Efficient for large files
+
+---
+
+### 🔹 head
+
+```bash
+head file.txt
+head -n 10 file.txt
+```
+
+* Reads first N lines
+
+---
+
+### 🔹 tail
+
+```bash
+tail file.txt
+tail -n 10 file.txt
+tail -f file.txt
+```
+
+---
+
+### 🔥 tail -f
+
+* Monitors file in real-time
+* Keeps file descriptor open
+
+---
+
+## 6. Observations from strace
+
+From experiment:
+
+Key syscalls observed:
+
+```text
+openat()
+read()
+write()
+close()
+```
+
+---
+
+### Insight
+
+```text
+User commands = wrappers over system calls
+```
+
+---
+
+## 7. Editors
+
+---
+
+### 🔹 nano
+
+* Simple
+* Beginner-friendly
+
+---
+
+### 🔹 vim
+
+* Powerful
+* Modal editor
+* Used in system-level development
+
+---
+
+## 8. Internal System Calls
+
+```c
+fd = open("file.txt");
+read(fd, buffer, size);
+write(fd, buffer, size);
+close(fd);
+```
+
+---
+
+## 9. Design Decisions
+
+| Design Choice    | Reason              |
+| ---------------- | ------------------- |
+| Streaming I/O    | Efficiency          |
+| File descriptors | Uniform interface   |
+| Buffering        | Performance         |
+| Lazy loading     | Memory optimization |
+
+---
+
+## 10. OS Design Insights
+
+---
+
+### 🔹 Everything is a Stream
+
+```text
+file, pipe, socket → unified interface
+```
+
+---
+
+### 🔹 Abstraction via FD
+
+```text
+All I/O handled via integers (fd)
+```
+
+---
+
+### 🔹 Kernel Buffering
+
+* Reduces disk access
+* Improves performance
+
+---
+
+### 🔹 Lazy I/O
+
+* Read when needed
+* Write when flushed
+
+---
+
+## 11. Limitations & Improvements
+
+| Problem             | Possible Improvement        |
+| ------------------- | --------------------------- |
+| Blocking I/O        | Async I/O                   |
+| Large file overhead | mmap                        |
+| No structure        | Structured storage          |
+
+---
+
+#  Summary (Topic-3 + Topic-4)
+
+| Topic           | Key Insight                      |
+| --------------- | -------------------------------- |
+| Links           | Multiple references to same data |
+| Hard Link       | Same inode                       |
+| Soft Link       | Path reference                   |
+| File Viewing    | Stream-based I/O                 |
+| File Descriptor | Core abstraction                 |
+| Syscalls        | Real execution layer             |
+
+---
+
+#  What We Observed Practically
+
+* Same inode for hard links
+* Data survives deletion (hard link)
+* Symlink breaks after deletion
+* `cat` uses open → read → write
+* `less` is efficient due to lazy loading
+* `tail -f` keeps file descriptor open
+
+---
