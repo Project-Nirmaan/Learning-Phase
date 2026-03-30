@@ -1,7 +1,7 @@
-# 📂 Week-1 — Filesystem Semantics & File Manipulation
+# Week-1 — Filesystem Semantics & File Manipulation
 ---
 
-# 🧠 Topic-1: Filesystem Navigation
+#  Topic-1: Filesystem Navigation
 
 ---
 
@@ -29,7 +29,7 @@ Human-readable path → Kernel-managed object (inode)
 
 ## 2. Core Concept
 
-### 🔑 Key Principle
+###  Key Principle
 
 ```
 File ≠ Filename
@@ -240,7 +240,7 @@ ls -a
 
 ---
 
-# 🧠 Topic-2: Creating, Copying, Moving & Deleting
+# Topic-2: Creating, Copying, Moving & Deleting
 
 ---
 
@@ -356,7 +356,7 @@ link_count == 0 AND no open file descriptor
 
 ---
 
-### 🔥 Important Truth
+###  Important
 
 ```
 Deleting a file removes the name, not necessarily the data immediately
@@ -520,7 +520,7 @@ rm file
 
 ---
 
-# 🧠 Topic-3: Links (Hard & Symbolic Links)
+#  Topic-3: Links (Hard & Symbolic Links)
 
 ---
 
@@ -753,7 +753,7 @@ Files → graph (via hard links)
 
 ---
 
-# 🧠 Topic-4: Viewing & Editing Files
+#  Topic-4: Viewing & Editing Files
 
 ---
 
@@ -879,7 +879,7 @@ tail -f file.txt
 
 ---
 
-### 🔥 tail -f
+###  tail -f
 
 * Monitors file in real-time
 * Keeps file descriptor open
