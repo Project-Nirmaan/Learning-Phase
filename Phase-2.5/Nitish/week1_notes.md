@@ -1020,7 +1020,7 @@ All I/O handled via integers (fd)
 
 ---
 
-# 🧠 Topic-5: Searching Files, Content & Pipelines
+#  Topic-5: Searching Files, Content & Pipelines
 
 ---
 
@@ -1357,15 +1357,7 @@ file, pipe, socket → unified interface
 
 ---
 
-## 12. Mental Model
-
-```text
-Pipeline = connecting programs via streams using file descriptors
-```
-
----
-
-# 🧠 Topic-6: Archiving & Compression
+#  Topic-6: Archiving & Compression
 
 ---
 
@@ -1559,16 +1551,7 @@ tar cf - folder | gzip > archive.tar.gz
 
 ---
 
-## 10. Mental Model
-
-```text
-Archive = structure
-Compression = encoding
-```
-
----
-
-# 🧠 Topic-7: Permissions & Ownership
+#  Topic-7: Permissions & Ownership
 
 ---
 
@@ -1757,16 +1740,7 @@ On file access:
 
 ---
 
-## 13. Mental Model
-
-```text
-Permissions =
-Rules enforced by kernel before allowing access
-```
-
----
-
-# 🚀 Final Summary (Topic-5 → Topic-7)
+#  Summary (Topic-5 → Topic-7)
 
 | Topic       | Core Idea          |
 | ----------- | ------------------ |
@@ -1778,7 +1752,7 @@ Rules enforced by kernel before allowing access
 
 ---
 
-# 🧠 Final Insight
+#  Final Insight
 
 > Linux is not a collection of commands
 > It is a system of:
