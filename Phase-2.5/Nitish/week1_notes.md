@@ -1017,3 +1017,774 @@ All I/O handled via integers (fd)
 * `tail -f` keeps file descriptor open
 
 ---
+
+---
+
+# 🧠 Topic-5: Searching Files, Content & Pipelines
+
+---
+
+## 1. Problem Statement
+
+Modern systems contain:
+
+* Thousands of files
+* Logs, configs, source code
+
+### 🔴 Challenges
+
+```text
+- Find a file by name
+- Search content inside files
+- Extract specific information
+- Process large datasets efficiently
+```
+
+---
+
+## 2. Core Philosophy
+
+```text
+Linux Philosophy:
+"Do one thing well, and compose with others"
+```
+
+---
+
+## 3. Types of Search
+
+---
+
+### 🔹 Name-Based Search
+
+Find files based on:
+
+* name
+* type
+* size
+* time
+
+---
+
+### 🔹 Content-Based Search
+
+Find patterns inside files:
+
+* strings
+* regex patterns
+* logs
+
+---
+
+## 4. Name-Based Search
+
+---
+
+### 🔹 find (Primary Tool)
+
+```bash
+find <path> <conditions>
+```
+
+---
+
+### Examples
+
+```bash
+find . -name "file.txt"
+find . -type f
+find . -size +1M
+find . -mtime -1
+```
+
+---
+
+### Internal Behavior
+
+* Traverses directory tree
+* Uses `stat()` on each file
+* Applies filters
+
+---
+
+### Insight
+
+```text
+find = real-time filesystem traversal
+```
+
+---
+
+### 🔹 locate
+
+```bash
+locate file.txt
+```
+
+---
+
+### Behavior
+
+* Uses prebuilt database
+* Very fast
+* May be outdated
+
+---
+
+### Insight
+
+```text
+locate = cached search
+find   = real-time search
+```
+
+---
+
+## 5. Content-Based Search
+
+---
+
+### 🔹 grep (Core Tool)
+
+```bash
+grep "pattern" file.txt
+```
+
+---
+
+### Common Options
+
+```bash
+grep -i "hello" file.txt    # case insensitive
+grep -n "hello" file.txt    # line numbers
+grep -r "hello" .           # recursive
+grep -v "hello" file.txt    # invert match
+```
+
+---
+
+### Internal Behavior
+
+* Reads file as stream
+* Applies pattern matching (regex)
+
+---
+
+### Key Insight
+
+```text
+grep operates on STREAMS, not files
+```
+
+---
+
+## 6. Data Processing Tools
+
+---
+
+### 🔹 cut
+
+```bash
+cut -d " " -f1 file.txt
+```
+
+Extract columns from data
+
+---
+
+### 🔹 sort
+
+```bash
+sort file.txt
+```
+
+Sorts input data
+
+---
+
+### 🔹 uniq
+
+```bash
+uniq file.txt
+```
+
+Removes adjacent duplicates
+
+---
+
+### Important
+
+```text
+uniq requires sorted input for full effect
+```
+
+```bash
+sort file.txt | uniq
+```
+
+---
+
+## 7. Pipelines (MOST IMPORTANT)
+
+---
+
+### Definition
+
+```text
+Pipeline = output of one command → input of another
+```
+
+---
+
+### Syntax
+
+```bash
+command1 | command2
+```
+
+---
+
+### Example
+
+```bash
+cat file.txt | grep "hello"
+```
+
+---
+
+### Internal Flow
+
+```text
+Process1 (stdout) → PIPE → Process2 (stdin)
+```
+
+---
+
+## 8. Kernel-Level Execution
+
+When pipeline runs:
+
+1. Shell creates pipe
+2. Forks processes
+3. Connects file descriptors
+
+```text
+fd=1 → pipe → fd=0
+```
+
+---
+
+### Insight
+
+```text
+Pipeline = IPC (Inter-Process Communication)
+```
+
+---
+
+## 9. Advanced Tools
+
+---
+
+### 🔹 tee
+
+```bash
+echo "hello" | tee file.txt
+```
+
+* Writes to file + stdout
+
+---
+
+### 🔹 xargs
+
+```bash
+echo file.txt | xargs cat
+```
+
+* Converts input → arguments
+
+---
+
+### 🔹 pipefail
+
+```bash
+set -o pipefail
+```
+
+Fix pipeline error handling
+
+---
+
+## 10. Practical Observations
+
+* Broken symlinks cause pipeline errors
+* `find | xargs` must filter valid files
+* Commands are strict (no auto-correction)
+
+---
+
+### Fix Example
+
+```bash
+find . -type f -name "*.txt" | xargs grep "Munna"
+```
+
+---
+
+## 11. OS Design Insights
+
+---
+
+### 🔹 Everything is a Stream
+
+```text
+file, pipe, socket → unified interface
+```
+
+---
+
+### 🔹 Shell as Orchestrator
+
+* Shell doesn’t process data
+* It connects processes
+
+---
+
+### 🔹 Modularity
+
+* Small tools → powerful combinations
+
+---
+
+## 12. Mental Model
+
+```text
+Pipeline = connecting programs via streams using file descriptors
+```
+
+---
+
+# 🧠 Topic-6: Archiving & Compression
+
+---
+
+## 1. Problem Statement
+
+```text
+- Share multiple files as one unit
+- Reduce storage size
+- Backup data efficiently
+```
+
+---
+
+## 2. Core Concepts
+
+---
+
+### 🔹 Archiving
+
+```text
+Combine multiple files → single file
+```
+
+---
+
+### 🔹 Compression
+
+```text
+Reduce file size using encoding
+```
+
+---
+
+### Key Insight
+
+```text
+Archiving ≠ Compression
+```
+
+---
+
+## 3. tar (Archiving Tool)
+
+---
+
+### Create Archive
+
+```bash
+tar -cvf archive.tar folder/
+```
+
+---
+
+### Extract Archive
+
+```bash
+tar -xvf archive.tar
+```
+
+---
+
+### Behavior
+
+* Stores file structure
+* Preserves metadata
+
+---
+
+### Important
+
+```text
+tar does NOT compress
+```
+
+---
+
+## 4. gzip (Compression)
+
+---
+
+### Compress
+
+```bash
+gzip file.txt
+```
+
+---
+
+### Decompress
+
+```bash
+gunzip file.txt.gz
+```
+
+---
+
+### Behavior
+
+* Replaces original file
+* Reduces size
+
+---
+
+## 5. Combined Usage
+
+---
+
+### Create compressed archive
+
+```bash
+tar -czvf archive.tar.gz folder/
+```
+
+---
+
+### Extract
+
+```bash
+tar -xzvf archive.tar.gz
+```
+
+---
+
+### Insight
+
+```text
+tar → structure
+gzip → size reduction
+```
+
+---
+
+## 6. zip vs tar.gz
+
+| Feature     | tar.gz         | zip            |
+| ----------- | -------------- | -------------- |
+| Compression | separate       | built-in       |
+| Metadata    | preserved      | limited        |
+| Usage       | Linux standard | cross-platform |
+
+---
+
+## 7. Internal Flow
+
+```text
+files → tar → stream → gzip → compressed file
+```
+
+---
+
+### Equivalent Pipeline
+
+```bash
+tar cf - folder | gzip > archive.tar.gz
+```
+
+---
+
+## 8. OS Design Insights
+
+---
+
+### 🔹 Separation of Concerns
+
+* Archiving and compression are independent
+
+---
+
+### 🔹 Stream Processing
+
+* tar outputs stream
+* gzip consumes stream
+
+---
+
+### 🔹 Metadata Preservation
+
+* permissions
+* ownership
+* timestamps
+
+---
+
+## 9. Limitations
+
+| Problem                | Improvement    |
+| ---------------------- | -------------- |
+| tar not compressed     | combine tools  |
+| gzip not random-access | better formats |
+| zip metadata issues    | advanced FS    |
+
+---
+
+## 10. Mental Model
+
+```text
+Archive = structure
+Compression = encoding
+```
+
+---
+
+# 🧠 Topic-7: Permissions & Ownership
+
+---
+
+## 1. Problem Statement
+
+```text
+Multiple users → shared system → need controlled access
+```
+
+---
+
+## 2. Core Model
+
+```text
+Each file has:
+- Owner (user)
+- Group
+- Permissions
+```
+
+---
+
+## 3. Permission Structure
+
+```text
+User | Group | Others
+rwx  | rwx   | rwx
+```
+
+---
+
+## 4. Permission Meaning
+
+| Permission  | File         | Directory     |
+| ----------- | ------------ | ------------- |
+| Read (r)    | view content | list files    |
+| Write (w)   | modify       | create/delete |
+| Execute (x) | run          | enter (cd)    |
+
+---
+
+## 5. Example
+
+```text
+-rw-r--r--
+```
+
+| Category | Value |
+| -------- | ----- |
+| User     | rw-   |
+| Group    | r--   |
+| Others   | r--   |
+
+---
+
+## 6. chmod
+
+---
+
+### Symbolic Mode
+
+```bash
+chmod u+x file
+chmod g-w file
+```
+
+---
+
+### Numeric Mode
+
+```bash
+chmod 755 file
+```
+
+---
+
+### Numeric Meaning
+
+| Value | Meaning |
+| ----- | ------- |
+| 4     | read    |
+| 2     | write   |
+| 1     | execute |
+
+---
+
+## 7. chown / chgrp
+
+---
+
+```bash
+sudo chown user file
+chgrp group file
+```
+
+---
+
+## 8. umask
+
+---
+
+### Default Permission Control
+
+```bash
+umask
+```
+
+---
+
+### Example
+
+```text
+Default: 666
+umask:   022
+Result:  644
+```
+
+---
+
+## 9. stat
+
+```bash
+stat file.txt
+```
+
+Shows:
+
+* permissions
+* owner
+* timestamps
+* inode
+
+---
+
+## 10. Kernel Enforcement
+
+On file access:
+
+```text
+1. Check UID
+2. Check GID
+3. Compare permissions
+4. Allow / deny
+```
+
+---
+
+## 11. OS Design Insights
+
+---
+
+### 🔹 Kernel-level Security
+
+* Cannot be bypassed by user programs
+
+---
+
+### 🔹 Simple but Effective Model
+
+```text
+3 categories × 3 permissions
+```
+
+---
+
+### 🔹 Directory Permissions Are Special
+
+* write → modify entries
+* execute → traversal
+
+---
+
+### 🔹 UID/GID Based Identity
+
+* kernel uses IDs, not names
+
+---
+
+## 12. Limitations & Improvements
+
+| Problem             | Solution        |
+| ------------------- | --------------- |
+| Too simple          | ACL             |
+| No inheritance      | extended models |
+| Limited flexibility | RBAC            |
+
+---
+
+## 13. Mental Model
+
+```text
+Permissions =
+Rules enforced by kernel before allowing access
+```
+
+---
+
+# 🚀 Final Summary (Topic-5 → Topic-7)
+
+| Topic       | Core Idea          |
+| ----------- | ------------------ |
+| Searching   | Find & filter data |
+| Pipelines   | Connect processes  |
+| Archiving   | Combine files      |
+| Compression | Reduce size        |
+| Permissions | Control access     |
+
+---
+
+# 🧠 Final Insight
+
+> Linux is not a collection of commands
+> It is a system of:
+
+```text
+Streams + Processes + Permissions + Data Management
+```
+
+---
