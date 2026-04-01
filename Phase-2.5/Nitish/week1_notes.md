@@ -1762,3 +1762,378 @@ Streams + Processes + Permissions + Data Management
 ```
 
 ---
+
+#  Topic-8: Aliases & Shell Customization
+
+---
+
+## 1. Problem Statement
+
+During daily workflow, users repeatedly execute:
+
+```bash id="n1a8yq"
+ls -la
+git status
+grep -r "pattern" .
+```
+
+---
+
+### 🔴 Challenges
+
+```text id="u3k7x1"
+- Repetitive commands
+- Long command strings
+- Human errors (typos)
+- Inconsistent workflows across team
+```
+
+---
+
+###  Solution
+
+> Customize the shell to:
+
+* Reduce repetition
+* Standardize commands
+* Improve productivity
+
+---
+
+## 2. Core Concept
+
+```text id="9s2p4c"
+Shell = programmable interface between user and OS
+```
+
+---
+
+## 3. What is an Alias?
+
+---
+
+### Definition
+
+> An alias is a **text substitution rule** defined in the shell.
+
+---
+
+### Example
+
+```bash id="f1k9bz"
+alias ll='ls -alF'
+```
+
+---
+
+Now:
+
+```bash id="c8x4m2"
+ll
+```
+
+Expands to:
+
+```bash id="z7q2de"
+ls -alF
+```
+
+---
+
+### Key Insight
+
+```text id="k4t1vn"
+Alias is NOT a function
+Alias is NOT a program
+Alias is just text replacement before execution
+```
+
+---
+
+## 4. How Alias Works Internally
+
+---
+
+When user types:
+
+```bash id="g5m1qz"
+ll
+```
+
+Shell performs:
+
+```text id="t8z7u4"
+1. Lookup alias table
+2. Replace "ll" → "ls -alF"
+3. Execute resulting command
+```
+
+---
+
+👉 Happens **before command execution**
+
+---
+
+## 5. Creating Aliases
+
+---
+
+### Temporary (Session Only)
+
+```bash id="r6j3ws"
+alias ll='ls -alF'
+alias gs='git status'
+```
+
+---
+
+### Remove Alias
+
+```bash id="b3w8yd"
+unalias ll
+```
+
+---
+
+---
+
+## 6. Persistent Aliases (.bashrc)
+
+---
+
+### File Location
+
+```bash id="n2k7vc"
+~/.bashrc
+```
+
+---
+
+### Add Aliases
+
+```bash id="d4m1zx"
+nano ~/.bashrc
+```
+
+Add:
+
+```bash id="y9c3lp"
+alias ll='ls -alF'
+alias gs='git status'
+alias gp='git push'
+```
+
+---
+
+### Apply Changes
+
+```bash id="p8q6nh"
+source ~/.bashrc
+```
+
+---
+
+👉 Makes aliases persistent across sessions
+
+---
+
+## 7. Shell Startup Files
+
+---
+
+| File            | Purpose                         |
+| --------------- | ------------------------------- |
+| `.bashrc`       | Interactive shell configuration |
+| `.bash_profile` | Login shell configuration       |
+| `.profile`      | Generic shell configuration     |
+
+---
+
+### Execution Flow
+
+```text id="x2r8bn"
+Login shell → .bash_profile → .bashrc
+```
+
+---
+
+## 8. Limitations of Aliases
+
+---
+
+### ❌ No Argument Handling
+
+```bash id="v7p3je"
+alias greet='echo Hello'
+greet Nitish
+```
+
+👉 Output ignores argument
+
+---
+
+### ❌ Not Available in Scripts
+
+```text id="a5z9xp"
+Aliases are only for interactive shells
+```
+
+---
+
+### ❌ No Logic Support
+
+* No loops
+* No conditions
+* No parameters
+
+---
+
+## 9. Alias vs Function
+
+---
+
+### Alias
+
+```bash id="k3j8yt"
+alias ll='ls -alF'
+```
+
+---
+
+### Function
+
+```bash id="s1v7mq"
+greet() {
+    echo "Hello $1"
+}
+```
+
+---
+
+### Comparison
+
+| Feature    | Alias  | Function |
+| ---------- | ------ | -------- |
+| Arguments  | ❌      | ✅        |
+| Logic      | ❌      | ✅        |
+| Complexity | Simple | Advanced |
+
+---
+
+### Insight
+
+```text id="u9d4kt"
+Alias = shortcut  
+Function = programmable abstraction
+```
+
+---
+
+## 11. Why Shell Customization Matters
+
+---
+
+###  Productivity
+
+* Faster workflows
+* Reduced typing
+
+---
+
+###  Standardization
+
+Teams can define:
+
+```bash id="m7z4yx"
+alias run-tests='make test && ./test_runner'
+```
+
+---
+
+###  Abstraction
+
+Hide complex commands behind simple names
+
+---
+
+###  Environment Control
+
+```text id="p6k2wc"
+Shell becomes personalized development interface
+```
+
+---
+
+## 12. OS Design Insights
+
+---
+
+### 🔹 Layered Architecture
+
+```text id="n3q8yt"
+User → Shell → Commands → Kernel
+```
+
+---
+
+### 🔹 Shell-Level Abstraction
+
+* Alias exists at shell level
+* Does not affect kernel
+
+---
+
+### 🔹 Separation of Concerns
+
+```text id="v2m7kp"
+Shell → command parsing  
+Kernel → execution & resource control
+```
+
+---
+
+### 🔹 Custom Interface
+
+Users can:
+
+* modify shell behavior
+* build workflows
+
+---
+
+## 13. Limitations & Improvements
+
+---
+
+| Problem          | Improvement     |
+| ---------------- | --------------- |
+| Too many aliases | Use functions   |
+| Not portable     | Use scripts     |
+| Limited power    | Build CLI tools |
+
+---
+
+#  Final Summary (Topic-8)
+
+| Concept  | Insight                  |
+| -------- | ------------------------ |
+| Alias    | Text substitution        |
+| Shell    | Programmable interface   |
+| .bashrc  | Persistent configuration |
+| Function | Advanced scripting unit  |
+
+---
+
+#  Final Week-1 Insight
+
+```text id="g6k9qw"
+Linux is a layered system:
+
+Filesystem → Data  
+Streams → Flow  
+Processes → Execution  
+Permissions → Security  
+Shell → Control Interface
+```
+
+---
