@@ -14,7 +14,7 @@ To understand how a running Linux system manages execution through:
 
 ---
 
-# 2. First Principles: What is a Process?
+# 2. What is a Process?
 
 A process is not just a program.
 
@@ -531,7 +531,7 @@ Depends on references
 
 ---
 
-# 16. Final Mental Model
+# 16. Finally we conclude :-
 
 ```
 CPU executes instructions
@@ -542,8 +542,6 @@ Signals control behavior
 ```
 
 ---
-
-# 17. Outcome of Topic-1
 
 After this topic, we can:
 
