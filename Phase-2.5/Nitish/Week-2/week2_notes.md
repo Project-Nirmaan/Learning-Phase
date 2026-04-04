@@ -1185,3 +1185,679 @@ After this topic, we can:
 * Reason about shell vs kernel responsibilities
 
 ---
+
+# Topic-3: Signals (Deep Systems Reference)
+
+---
+
+# 1. Objective
+
+To understand **signals as the asynchronous control mechanism** used by the kernel to:
+
+* Interrupt process execution
+* Control process lifecycle (stop, continue, terminate)
+* Enforce terminal access rules
+* Integrate with system calls (EINTR)
+* Coordinate execution across process groups
+
+---
+
+# 2. First Principles
+
+---
+
+## 2.1 What is a Signal?
+
+```text
+Signal = asynchronous notification sent by the kernel to a process
+```
+
+---
+
+## 2.2 Key Properties
+
+| Property      | Meaning                                 |
+| ------------- | --------------------------------------- |
+| Asynchronous  | Can occur at any time                   |
+| Kernel-driven | Sent by kernel or via syscall           |
+| Interruptive  | Can disrupt execution                   |
+| Non-blocking  | Delivered independently of process flow |
+
+---
+
+## 2.3 Correct Mental Model
+
+```text
+Signal ≠ command
+Signal = interrupt-like event
+```
+
+---
+
+# 3. Hardware → Kernel → Process Flow
+
+---
+
+## Full Pipeline
+
+```text
+Hardware Event (keyboard, timer, I/O)
+   ↓
+CPU Interrupt
+   ↓
+Kernel Handler
+   ↓
+Signal Generated
+   ↓
+Delivered to Process / Process Group
+```
+
+---
+
+## Example: Ctrl+C
+
+```text
+Keyboard interrupt
+→ Kernel detects Ctrl+C
+→ Sends SIGINT to foreground process group
+```
+
+---
+
+# 4. Signal Representation Inside Kernel
+
+---
+
+## Important Insight
+
+```text
+Signals are NOT immediately executed
+Signals are stored as state
+```
+
+---
+
+## Conceptual Structure
+
+```text
+task_struct {
+    pending_signals
+    blocked_signals (mask)
+    signal_handlers
+}
+```
+
+---
+
+## Meaning
+
+```text
+Signal delivery = marking signal as pending
+Signal handling = processing it later
+```
+
+---
+
+# 5. Signal Delivery Mechanism
+
+---
+
+## Step-by-Step
+
+```text
+1. Event occurs
+2. Kernel determines target (PID or process group)
+3. Signal marked as pending
+4. Process reaches safe execution point
+5. Signal is handled
+```
+
+---
+
+## Critical Insight
+
+```text
+Signal delivery is deferred, not instantaneous
+```
+
+---
+
+# 6. Default Signal Actions
+
+---
+
+| Signal  | Default Action  |
+| ------- | --------------- |
+| SIGINT  | Terminate       |
+| SIGTERM | Terminate       |
+| SIGKILL | Force terminate |
+| SIGSTOP | Stop            |
+| SIGCONT | Continue        |
+| SIGTSTP | Stop (terminal) |
+
+---
+
+## Key Distinction
+
+```text
+SIGTERM → request
+SIGKILL → enforcement
+```
+
+---
+
+# 7. Signal Handling Behavior
+
+---
+
+## A process can:
+
+```text
+1. Use default action
+2. Ignore signal
+3. Catch and handle signal
+```
+
+---
+
+## Exception (Critical)
+
+```text
+SIGKILL and SIGSTOP cannot be ignored or caught
+```
+
+---
+
+## Why?
+
+```text
+Kernel must retain ultimate control over all processes
+```
+
+---
+
+# 8. Signal Categories
+
+---
+
+## 8.1 Standard Signals
+
+Examples:
+
+```text
+SIGINT, SIGTERM, SIGSTOP
+```
+
+---
+
+### Behavior
+
+```text
+Not queued
+Multiple occurrences collapse into one
+```
+
+---
+
+## 8.2 Real-Time Signals
+
+```text
+SIGRTMIN → SIGRTMAX
+```
+
+---
+
+### Behavior
+
+```text
+Queued
+Delivered in order
+No merging
+```
+
+---
+
+## Key Insight
+
+```text
+Standard signals = flag
+Real-time signals = queue
+```
+
+---
+
+# 9. Signals and Process States
+
+---
+
+| Signal  | State Transition      |
+| ------- | --------------------- |
+| SIGSTOP | Running → Stopped (T) |
+| SIGCONT | Stopped → Running     |
+| SIGTERM | Running → Terminated  |
+| SIGKILL | Immediate termination |
+
+---
+
+## Important State
+
+```text
+T → stopped (not running, not sleeping)
+```
+
+---
+
+# 10. Signals and Process Groups
+
+---
+
+## Key Concept
+
+```text
+Signals are often delivered to process groups
+```
+
+---
+
+## Example
+
+```text
+Ctrl+C → sent to foreground process group
+```
+
+---
+
+## Insight
+
+```text
+Signal targeting is based on grouping, not parent-child hierarchy
+```
+
+---
+
+# 11. Signals vs System Calls
+
+---
+
+## System Call
+
+```text
+Process → Kernel request
+```
+
+---
+
+## Signal
+
+```text
+Kernel → Process notification
+```
+
+---
+
+## Insight
+
+```text
+Syscall = synchronous
+Signal  = asynchronous
+```
+
+---
+
+# 12. EINTR — Interrupted System Calls
+
+---
+
+## Definition
+
+```text
+EINTR = system call interrupted by signal
+```
+
+---
+
+## Execution Flow
+
+```text
+Process calls read()
+↓
+Kernel blocks waiting
+↓
+Signal arrives
+↓
+Kernel interrupts syscall
+↓
+Returns -1, errno = EINTR
+```
+
+---
+
+## Key Insight
+
+```text
+Signals interrupt execution, not just processes
+```
+
+---
+
+## Correct Handling Pattern
+
+```c
+while ((n = read(fd, buf, size)) == -1 && errno == EINTR) {
+    // retry
+}
+```
+
+---
+
+## Important Principle
+
+```text
+EINTR is not failure
+It is interruption
+```
+
+---
+
+# 13. Signal Masking
+
+---
+
+## Concept
+
+```text
+Processes can block signals using a mask
+```
+
+---
+
+## Behavior
+
+```text
+Blocked signal → remains pending
+Delivered later when unblocked
+```
+
+---
+
+## Exception
+
+```text
+SIGKILL, SIGSTOP cannot be masked
+```
+
+---
+
+# 14. fork() and Signal Behavior
+
+---
+
+## Inheritance
+
+Child inherits:
+
+```text
+✔ signal handlers
+✔ signal mask
+✔ process group
+✔ terminal association
+```
+
+---
+
+## Insight
+
+```text
+fork copies signal configuration
+exec resets most handlers
+```
+
+---
+
+# 15. exec() and Signals
+
+---
+
+## Behavior
+
+```text
+exec replaces program
+signal handlers reset to default (mostly)
+```
+
+---
+
+## Insight
+
+```text
+fork → copy behavior
+exec → reset behavior
+```
+
+---
+
+# 16. Terminal-Generated Signals
+
+---
+
+| Action | Signal  |
+| ------ | ------- |
+| Ctrl+C | SIGINT  |
+| Ctrl+Z | SIGTSTP |
+
+---
+
+## Special Signals
+
+| Signal  | Meaning                  |
+| ------- | ------------------------ |
+| SIGTTIN | Background read attempt  |
+| SIGTTOU | Background write attempt |
+
+---
+
+## Insight
+
+```text
+Terminal enforces access via signals
+```
+
+---
+
+# 17. SIGHUP (Session Termination)
+
+---
+
+## When triggered
+
+```text
+Terminal closes
+```
+
+---
+
+## Behavior
+
+```text
+Sent to process group
+Default → terminate
+```
+
+---
+
+## Solutions
+
+```bash
+nohup command &
+disown
+```
+
+---
+
+## Insight
+
+```text
+Process lifetime can depend on terminal session
+```
+
+---
+
+# 18. Practical Observations (From Experiments)
+
+---
+
+## Observation 1
+
+```text
+Multiple SIGINT → only one delivered
+```
+
+---
+
+## Observation 2
+
+```text
+SIGSTOP always works
+SIGINT may be ignored
+```
+
+---
+
+## Observation 3
+
+```text
+Signal order affects final state
+```
+
+---
+
+## Observation 4
+
+```text
+trap affects shell, not external programs
+```
+
+---
+
+## Observation 5
+
+```text
+Signals delivered to process groups, not just processes
+```
+
+---
+
+# 19. Edge Cases
+
+---
+
+## 19.1 Ignored Signals
+
+```text
+Process may ignore SIGINT or SIGTERM
+```
+
+---
+
+## 19.2 Unkillable Process (D State)
+
+```text
+Stuck in kernel → cannot process signals
+```
+
+---
+
+## 19.3 Zombie Processes
+
+```text
+Signal handled, process exited
+Parent did not reap
+```
+
+---
+
+## 19.4 Signal Race Conditions
+
+```text
+Multiple signals → order-dependent behavior
+```
+
+---
+
+# 20. Deep System Insights
+
+---
+
+## Insight 1
+
+```text
+Signals are kernel-level control plane
+```
+
+---
+
+## Insight 2
+
+```text
+Signal delivery ≠ signal handling
+```
+
+---
+
+## Insight 3
+
+```text
+Execution is interruptible at any time
+```
+
+---
+
+## Insight 4
+
+```text
+Process groups define control boundaries
+```
+
+---
+
+## Insight 5
+
+```text
+Kernel enforces authority via non-maskable signals
+```
+
+---
+
+# 21. Final Mental Model
+
+---
+
+```text
+Process executes
+   ↓
+Kernel event occurs
+   ↓
+Signal marked pending
+   ↓
+Process reaches safe point
+   ↓
+Handler executes (or default action)
+   ↓
+Execution resumes / stops / exits
+```
+
+---
+
+# 22. Outcome of Topic-3
+
+After this topic, we can:
+
+* Explain signal delivery pipeline
+* Understand process control via signals
+* Predict behavior of Ctrl+C, Ctrl+Z, kill
+* Handle EINTR in system programs
+* Understand signal inheritance (fork/exec)
+* Debug real-world failures caused by signals
+* Reason about asynchronous OS behavior
+
+---
