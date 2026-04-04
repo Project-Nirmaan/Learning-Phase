@@ -1,4 +1,8 @@
-# Week-2 Notes — Topic-1: Process Inspection & Control
+# Week-2 Notes
+
+---
+
+# Topic-1: Process Inspection & Control
 
 ---
 
@@ -551,5 +555,633 @@ After this topic, we can:
 * Diagnose CPU and process behavior
 * Connect filesystem and process behavior
 * Reason about system execution instead of memorizing commands
+
+---
+
+# Topic-2: Foreground & Background Jobs
+
+---
+
+# 1. Objective
+
+To understand how Linux systems manage **interactive execution** through:
+
+* Shell-level job abstraction
+* Kernel-level process control
+* Terminal ownership and access rules
+* Signal-driven control (SIGINT, SIGTSTP, SIGTTIN, etc.)
+* Behavior differences between foreground and background execution
+
+---
+
+# 2. First Principles: Job vs Process
+
+---
+
+## 2.1 Process (Kernel Abstraction)
+
+A process is:
+
+```
+An execution context managed by the kernel
+```
+
+Identified by:
+
+* PID (Process ID)
+* Managed by scheduler
+* Holds memory, file descriptors, CPU state
+
+---
+
+## 2.2 Job (Shell Abstraction)
+
+A job is:
+
+```
+A shell-managed reference to one or more processes
+associated with a terminal
+```
+
+Identified by:
+
+* Job ID: %1, %2, etc.
+* Stored in shell’s job table
+
+---
+
+## Key Distinction
+
+```
+Process → Kernel entity (real execution)
+Job     → Shell entity (user interaction layer)
+```
+
+---
+
+# 3. Two Control Systems
+
+---
+
+## 3.1 Kernel Responsibilities
+
+* Process creation (fork, exec)
+* Scheduling
+* Signal delivery
+* Resource management
+
+---
+
+## 3.2 Shell Responsibilities
+
+* Job tracking
+* Terminal assignment
+* Mapping job IDs ↔ process groups
+* Sending control signals (fg, bg)
+
+---
+
+## Insight
+
+```
+Shell manages interaction
+Kernel manages execution
+```
+
+---
+
+# 4. Terminal as a Resource
+
+---
+
+## Core Idea
+
+```
+Terminal is a shared resource (like CPU or memory)
+```
+
+---
+
+## Key Property
+
+```
+Only ONE process group can control the terminal at a time
+```
+
+---
+
+## Foreground Process Group (FGPGID)
+
+Kernel tracks:
+
+```
+Foreground Process Group ID
+```
+
+This group has:
+
+* Access to stdin (keyboard)
+* Control over terminal input/output
+
+---
+
+# 5. Foreground Execution
+
+---
+
+## Definition
+
+```
+Foreground job = process group that owns the terminal
+```
+
+---
+
+## Behavior
+
+* Receives keyboard input
+* Can read from stdin
+* Can receive terminal-generated signals
+
+---
+
+## Example
+
+```bash
+sleep 100
+```
+
+* Terminal is blocked
+* Process owns terminal
+
+---
+
+## Insight
+
+```
+Foreground = terminal ownership, not execution priority
+```
+
+---
+
+# 6. Background Execution
+
+---
+
+## Definition
+
+```
+Background job = process running without terminal control
+```
+
+---
+
+## Behavior
+
+* Executes normally
+* Cannot interact with terminal
+* Runs concurrently with shell
+
+---
+
+## Example
+
+```bash
+sleep 100 &
+```
+
+Output:
+
+```
+[1] 3050
+```
+
+* [1] → job ID
+* 3050 → PID
+
+---
+
+## Insight
+
+```
+Background ≠ separate execution model
+Background = restricted terminal interaction
+```
+
+---
+
+# 7. Job Control Commands (Behavioral View)
+
+---
+
+## 7.1 `&` — Run in Background
+
+* Shell creates process
+* Does NOT assign terminal
+* Adds entry to job table
+
+---
+
+## 7.2 `jobs`
+
+* Displays shell’s job table
+* Does NOT query kernel
+
+---
+
+## 7.3 `fg %n`
+
+* Transfers terminal control to job
+* Uses `tcsetpgrp()` internally
+
+---
+
+## 7.4 `bg %n`
+
+* Sends SIGCONT
+* Keeps process in background
+
+---
+
+## 7.5 `disown %n`
+
+* Removes job from shell tracking
+* Process continues independently
+
+---
+
+## Insight
+
+```
+jobs ≠ ps
+jobs → shell state
+ps   → kernel state
+```
+
+---
+
+# 8. Signals and Terminal Interaction
+
+---
+
+## Terminal-Generated Signals
+
+| Action   | Signal  |
+| -------- | ------- |
+| Ctrl + C | SIGINT  |
+| Ctrl + Z | SIGTSTP |
+
+---
+
+## Job Control Signals
+
+| Signal  | Purpose                  |
+| ------- | ------------------------ |
+| SIGSTOP | Force stop               |
+| SIGCONT | Resume                   |
+| SIGTTIN | Background read attempt  |
+| SIGTTOU | Background write attempt |
+
+---
+
+## Insight
+
+```
+Terminal does not send commands
+It sends signals
+```
+
+---
+
+# 9. Terminal Access Rules (Critical)
+
+---
+
+## Rule 1: Reading from Terminal
+
+```
+Only foreground process group can read from terminal
+```
+
+---
+
+### Violation
+
+Background process tries:
+
+```bash
+cat &
+```
+
+---
+
+### Result
+
+```
+Kernel sends SIGTTIN → process STOPPED
+```
+
+---
+
+## Rule 2: Writing to Terminal
+
+* Usually allowed
+* May trigger SIGTTOU in strict conditions
+
+---
+
+## Insight
+
+```
+Kernel enforces terminal access, not shell
+```
+
+---
+
+# 10. Input/Output Redirection Interaction
+
+---
+
+## Key Principle
+
+```
+stdin, stdout, stderr are independent
+```
+
+---
+
+## Cases
+
+---
+
+### Case 1
+
+```bash
+cat &
+```
+
+* stdin → terminal
+* ❌ STOP (SIGTTIN)
+
+---
+
+### Case 2
+
+```bash
+cat < file &
+```
+
+* stdin → file
+* ✅ works
+
+---
+
+### Case 3
+
+```bash
+cat > file &
+```
+
+* stdin → terminal
+* ❌ STOP
+
+---
+
+### Case 4
+
+```bash
+cat < input.txt > output.txt &
+```
+
+* stdin → file
+* stdout → file
+* ✅ works
+
+---
+
+## Insight
+
+```
+Failure depends on terminal usage, not background execution
+```
+
+---
+
+# 11. Process Groups (Advanced Concept)
+
+---
+
+## Definition
+
+```
+A process group = collection of related processes (job)
+```
+
+---
+
+## Purpose
+
+* Signal delivery to multiple processes
+* Pipeline management
+
+---
+
+## Example
+
+```bash
+cmd1 | cmd2
+```
+
+* Multiple processes
+* Single process group
+* Controlled as one job
+
+---
+
+## Insight
+
+```
+Job = Process Group abstraction in shell
+```
+
+---
+
+# 12. Lifecycle of a Job (Observed Flow)
+
+---
+
+```
+Command typed
+  ↓
+Shell parses input
+  ↓
+fork()
+  ↓
+execve()
+  ↓
+Process created (PID)
+  ↓
+Shell assigns job ID
+  ↓
+Foreground or background decision
+  ↓
+Terminal ownership assigned or withheld
+```
+
+---
+
+# 13. Edge Cases & Observations
+
+---
+
+## 13.1 Background Process Stops Automatically
+
+Cause:
+
+```
+Attempt to read from terminal → SIGTTIN
+```
+
+---
+
+## 13.2 Foreground Recovery
+
+```
+fg %n → restores terminal access
+```
+
+---
+
+## 13.3 Disowned Processes
+
+* Continue running after terminal closes
+* Shell loses control
+
+---
+
+## 13.4 Multiple Background Jobs
+
+* Managed independently in shell
+* Visible via `jobs`
+
+---
+
+## 13.5 Terminal Dependency
+
+Programs requiring input (e.g., cat, vim):
+
+* Fail in background without redirection
+
+---
+
+# 14. Key Insights from Experiments
+
+---
+
+## Insight 1
+
+```
+Foreground vs background is about terminal control,
+not execution behavior
+```
+
+---
+
+## Insight 2
+
+```
+Kernel enforces terminal access rules using signals
+```
+
+---
+
+## Insight 3
+
+```
+Shell is only a controller, not an enforcer
+```
+
+---
+
+## Insight 4
+
+```
+Redirection changes behavior more than backgrounding
+```
+
+---
+
+## Insight 5
+
+```
+Process groups enable unified control of multiple processes
+```
+
+---
+
+# 15. Common Misconceptions
+
+---
+
+### ❌ “Background process has no terminal”
+
+→ Incorrect
+It has terminal, but lacks control
+
+---
+
+### ❌ “& makes program faster”
+
+→ Incorrect
+Only changes interaction, not execution speed
+
+---
+
+### ❌ “jobs shows all processes”
+
+→ Incorrect
+Only shell-managed jobs
+
+---
+
+### ❌ “cat stops because it cannot read”
+
+→ Incorrect
+Kernel stops it due to access violation
+
+---
+
+# 16. Finally we conclude :-
+
+---
+
+```
+Shell:
+  tracks jobs
+  assigns job IDs
+  controls terminal ownership
+
+Kernel:
+  runs processes
+  enforces access rules
+  delivers signals
+
+Terminal:
+  shared resource
+  controlled by foreground process group
+```
+
+---
+
+# 17. Outcome of Topic-2
+
+After this topic, we can:
+
+* Distinguish job vs process clearly
+* Understand terminal ownership
+* Predict behavior of foreground/background commands
+* Diagnose stopped jobs and signal behavior
+* Control execution using fg, bg, disown
+* Reason about shell vs kernel responsibilities
 
 ---
