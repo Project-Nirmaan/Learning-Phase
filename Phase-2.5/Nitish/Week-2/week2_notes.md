@@ -2326,3 +2326,605 @@ PATH:
 
 ---
 
+# Topic-5: Process Lifecycle 
+
+---
+
+# 1. Objective
+
+To deeply understand how processes:
+
+* Are created (`fork`)
+* Are transformed (`exec`)
+* Execute and interact
+* Terminate and get cleaned up (`exit`, `wait`)
+* Form hierarchies (parent, child, orphan)
+* Exhibit edge states (zombie, uninterruptible)
+
+This topic connects **execution (Topic-4)** with **control (Topic-3)**.
+
+---
+
+# 2. First Principles
+
+---
+
+## 2.1 Program vs Process
+
+```text
+Program = static executable file (disk)
+Process = running instance of program (memory + CPU state)
+```
+
+---
+
+## 2.2 Process = Execution Context
+
+A process contains:
+
+* Code (text segment)
+* Global/static data
+* Heap (dynamic allocation)
+* Stack (function calls)
+* CPU registers (instruction pointer, etc.)
+* Open file descriptors
+* Signal handlers and masks
+
+---
+
+## Key Insight
+
+```text
+Process is NOT just code — it is a complete execution snapshot
+```
+
+---
+
+# 3. Process Lifecycle
+
+---
+
+## High-Level Flow
+
+```text
+Created → Running → Waiting → Running → Terminated
+                     ↓
+                   Stopped
+```
+
+---
+
+## Linux States (`ps`)
+
+| State | Meaning                             |
+| ----- | ----------------------------------- |
+| R     | Running or runnable                 |
+| S     | Sleeping (interruptible wait)       |
+| D     | Uninterruptible sleep (kernel wait) |
+| T     | Stopped (via signal)                |
+| Z     | Zombie (terminated, not reaped)     |
+
+---
+
+## Insight
+
+```text
+Process lifecycle is driven by scheduler + signals + syscalls
+```
+
+---
+
+# 4. Process Creation — `fork()`
+
+---
+
+## 4.1 Definition
+
+```c
+pid_t pid = fork();
+```
+
+Creates a **new process** by duplicating the caller.
+
+---
+
+## 4.2 Return Semantics
+
+```text
+pid == 0   → child process
+pid > 0    → parent (returns child PID)
+pid < 0    → error
+```
+
+---
+
+## 4.3 Execution Model
+
+```text
+Before fork:
+    Single process
+
+After fork:
+    Two processes executing same code independently
+```
+
+---
+
+## Key Insight
+
+```text
+fork creates parallel execution paths, not a new program
+```
+
+---
+
+# 5. Memory Behavior — Copy-on-Write (COW)
+
+---
+
+## Problem
+
+Full memory copy is expensive.
+
+---
+
+## Solution
+
+```text
+Parent and child share memory pages initially
+Copy occurs only when a write happens
+```
+
+---
+
+## Insight
+
+```text
+fork is efficient because memory duplication is deferred
+```
+
+---
+
+# 6. Process Transformation — `exec()`
+
+---
+
+## 6.1 Definition
+
+```c
+execve(path, argv, envp);
+```
+
+---
+
+## 6.2 Behavior
+
+```text
+Replaces entire process memory with new program
+```
+
+---
+
+## Properties
+
+* PID remains same
+* Code, stack, heap replaced
+* Does NOT return on success
+
+---
+
+## Combined Model
+
+```text
+fork() → create process
+exec() → assign program
+```
+
+---
+
+## Insight
+
+```text
+fork defines "who runs"
+exec defines "what runs"
+```
+
+---
+
+# 7. Process Termination
+
+---
+
+## Ways to terminate
+
+```text
+1. return from main()
+2. exit()
+3. signal (SIGTERM, SIGKILL)
+```
+
+---
+
+## Kernel Actions
+
+* Releases memory
+* Closes file descriptors
+* Stores exit status
+* Notifies parent
+
+---
+
+---
+
+# 8. Waiting — `wait()` / `waitpid()`
+
+---
+
+## Purpose
+
+```text
+Parent collects child’s exit status
+```
+
+---
+
+## Without wait()
+
+```text
+Child exits → becomes zombie
+```
+
+---
+
+## Example
+
+```c
+wait(NULL);
+```
+
+---
+
+## Insight
+
+```text
+wait is cleanup, not synchronization only
+```
+
+---
+
+# 9. Zombie Processes
+
+---
+
+## Definition
+
+```text
+Terminated process still present in process table
+```
+
+---
+
+## Why it exists
+
+```text
+Parent has not read exit status yet
+```
+
+---
+
+## Characteristics
+
+* No memory (freed)
+* No execution
+* Only metadata remains (PID, exit code)
+
+---
+
+## Insight
+
+```text
+Zombie = dead process awaiting acknowledgment
+```
+
+---
+
+# 10. Orphan Processes
+
+---
+
+## Definition
+
+```text
+Child process whose parent has terminated
+```
+
+---
+
+## Behavior
+
+```text
+Adopted by PID 1 (init/systemd)
+```
+
+---
+
+## Insight
+
+```text
+System guarantees every process has a parent
+```
+
+---
+
+# 11. Process Hierarchy
+
+---
+
+## Tree Structure
+
+```text
+PID 1 (init/systemd)
+ ├── system services
+ ├── user shell
+ │    ├── foreground jobs
+ │    └── background jobs
+```
+
+---
+
+## Observation Tool
+
+```bash
+ps -ejH
+```
+
+---
+
+## Insight
+
+```text
+Execution lineage ≠ signal grouping (process groups differ)
+```
+
+---
+
+# 12. File Descriptors & Inheritance
+
+---
+
+## Inherited across fork()
+
+```text
+0 → stdin
+1 → stdout
+2 → stderr
+```
+
+---
+
+## Implication
+
+```text
+Pipes and redirection rely on FD inheritance
+```
+
+---
+
+## Insight
+
+```text
+fork preserves I/O context, enabling shell features
+```
+
+---
+
+## Insight
+
+```text
+Signals control process lifecycle transitions
+```
+
+---
+
+# 13. Special States
+
+---
+
+## 13.1 Zombie (Z)
+
+* Dead but not reaped
+
+---
+
+## 13.2 Uninterruptible Sleep (D)
+
+```text
+Waiting inside kernel (e.g., I/O)
+Cannot be killed even with SIGKILL
+```
+
+---
+
+## Insight
+
+```text
+Process must return to user space to handle signals
+```
+
+---
+
+# 14. Practical Observations
+
+---
+
+## Observation 1
+
+```text
+fork creates two execution flows
+```
+
+---
+
+## Observation 2
+
+```text
+exec replaces program but keeps PID
+```
+
+---
+
+## Observation 3
+
+```text
+Zombie persists until parent calls wait()
+```
+
+---
+
+## Observation 4
+
+```text
+Orphan continues execution independently
+```
+
+---
+
+## Observation 5
+
+```text
+D-state processes ignore signals temporarily
+```
+
+---
+
+# 15. Common Misconceptions
+
+---
+
+### ❌ fork creates new program
+
+→ It duplicates process
+
+---
+
+### ❌ exec creates new process
+
+→ It replaces current process
+
+---
+
+### ❌ zombie consumes CPU
+
+→ It does not execute
+
+---
+
+### ❌ killing parent kills child
+
+→ Not necessarily (depends on signals/groups)
+
+---
+
+# 16. Debugging Process Issues
+
+---
+
+## Checklist
+
+1. Is process running or stopped?
+2. Is it zombie (Z)?
+3. Is parent alive?
+4. Is it in D state?
+5. Are signals being handled?
+
+---
+
+## Tools
+
+```bash
+ps -o pid,ppid,stat,cmd
+top
+htop
+```
+
+---
+
+# 17. Final Mentality
+
+---
+
+```text
+Shell:
+  fork()
+  exec()
+
+Process:
+  executes program
+
+Parent:
+  waits and cleans up
+
+Kernel:
+  manages lifecycle, scheduling, memory
+```
+
+---
+
+# 18. Some Insights
+
+---
+
+## Insight 1
+
+```text
+Process lifecycle is kernel-controlled, not program-controlled
+```
+
+---
+
+## Insight 2
+
+```text
+fork + exec is the fundamental process creation model in UNIX
+```
+
+---
+
+## Insight 3
+
+```text
+Zombie exists for correctness, not inefficiency
+```
+
+---
+
+## Insight 4
+
+```text
+Parent-child relationship manages cleanup, not control
+```
+
+---
+
+## Insight 5
+
+```text
+Execution, control, and hierarchy are separate concerns
+```
+
+---
+
+# 19. Learning Outcome
+
+After this topic, i think we can:
+
+* Explain process lifecycle end-to-end
+* Distinguish fork vs exec clearly
+* Understand zombie and orphan behavior
+* Debug process-related issues in Linux
+* Connect signals with lifecycle transitions
+
+---
+
+
+
