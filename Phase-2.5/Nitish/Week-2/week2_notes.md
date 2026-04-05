@@ -2145,3 +2145,184 @@ execve transforms process identity without changing PID
 ```
 
 ---
+
+## 10. Kernel Side: What Happens After execve
+
+Kernel performs:
+
+1. Validate binary format (ELF)
+2. Load program into memory
+3. Setup:
+
+   * stack
+   * heap
+   * registers
+4. Set instruction pointer → entry point
+5. Transfer control to user program
+
+---
+
+### Hidden Component
+
+Dynamic linker may run first:
+
+```
+/lib64/ld-linux.so
+```
+
+---
+
+## 11. Absolute vs Relative vs PATH Execution
+
+| Type     | Example | Behavior          |
+| -------- | ------- | ----------------- |
+| Absolute | /bin/ls | Direct execution  |
+| Relative | ./a.out | Current directory |
+| Name     | ls      | PATH search       |
+
+---
+
+### Key Insight
+
+```
+./ is NOT optional — it is explicit path selection
+```
+
+---
+
+## 12. Failure Modes 
+
+### Command Not Found
+
+Cause:
+
+* Not in PATH
+
+---
+
+### Permission Denied
+
+Cause:
+
+* Missing execute bit
+
+---
+
+### Exec Format Error
+
+Cause:
+
+* Invalid binary
+* Missing interpreter
+
+---
+
+### Subtle Case
+
+Script without execute bit:
+
+```
+bash script.sh → works
+./script.sh → fails
+```
+
+Reason:
+
+* bash uses read()
+* ./ uses execve()
+
+---
+
+## 13. Shebang – Interpreter Delegation
+
+Example:
+
+```
+#!/bin/bash
+```
+
+Kernel behavior:
+
+```
+execve("/bin/bash", ["script.sh"], env)
+```
+
+---
+
+### Key Insight
+
+```
+Scripts are not executed — they are interpreted
+```
+
+---
+
+## 14. Observability (Bridging Theory to Reality)
+
+### Using strace
+
+```
+strace ls
+```
+
+You will see:
+
+* execve()
+* open()
+* read()
+* write()
+
+---
+
+### Key Insight
+
+```
+Every command = sequence of syscalls
+```
+
+---
+
+## 15. Debugging Execution Issues
+
+Checklist:
+
+1. Does command exist?
+2. Is it in PATH?
+3. Is it executable?
+4. Is interpreter valid?
+5. Is alias interfering?
+
+---
+
+## 16. Final mentality
+
+```
+Shell:
+  interpret text
+  resolve meaning
+  fork process
+  request execution (execve)
+
+Kernel:
+  validate program
+  load into memory
+  execute instructions
+
+PATH:
+  decides WHICH program runs
+```
+
+---
+
+## 17. Critical Insights
+
+* Command execution is NOT direct execution
+* Shell is a language interpreter
+* Kernel is the only execution authority
+* fork() creates process
+* execve() defines program identity
+* PATH controls trust and behavior
+* Built-ins exist because process state matters
+
+---
+
