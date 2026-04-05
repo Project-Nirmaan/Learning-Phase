@@ -1,0 +1,245 @@
+[    54.941] (--) Log file renamed from "/var/log/Xorg.pid-1108.log" to "/var/log/Xorg.0.log"
+[    54.941] 
+X.Org X Server 1.21.1.16
+X Protocol Version 11, Revision 0
+[    54.941] Current Operating System: Linux BlackBuck 6.12.74+deb13+1-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.74-2 (2026-03-08) x86_64
+[    54.941] Kernel command line: BOOT_IMAGE=/boot/vmlinuz-6.12.74+deb13+1-amd64 root=UUID=94da8448-8d86-4952-bbd9-7bc0bfda9447 ro quiet
+[    54.941] xorg-server 2:21.1.16-1.3+deb13u1 (https://www.debian.org/support) 
+[    54.941] Current version of pixman: 0.44.0
+[    54.941] 	Before reporting problems, check http://wiki.x.org
+	to make sure that you have the latest version.
+[    54.941] Markers: (--) probed, (**) from config file, (==) default setting,
+	(++) from command line, (!!) notice, (II) informational,
+	(WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+[    54.941] (==) Log file: "/var/log/Xorg.0.log", Time: Wed Mar 25 22:20:11 2026
+[    54.941] (==) Using system config directory "/usr/share/X11/xorg.conf.d"
+[    54.942] (==) No Layout section.  Using the first Screen section.
+[    54.942] (==) No screen section available. Using defaults.
+[    54.942] (**) |-->Screen "Default Screen Section" (0)
+[    54.942] (**) |   |-->Monitor "<default monitor>"
+[    54.942] (==) No monitor specified for screen "Default Screen Section".
+	Using a default monitor configuration.
+[    54.942] (**) Allowing byte-swapped clients
+[    54.942] (==) Automatically adding devices
+[    54.942] (==) Automatically enabling devices
+[    54.942] (==) Automatically adding GPU devices
+[    54.942] (==) Automatically binding GPU devices
+[    54.942] (==) Max clients allowed: 256, resource mask: 0x1fffff
+[    54.942] (WW) The directory "/usr/share/fonts/X11/cyrillic" does not exist.
+[    54.942] 	Entry deleted from font path.
+[    54.942] (==) FontPath set to:
+	/usr/share/fonts/X11/misc,
+	/usr/share/fonts/X11/100dpi/:unscaled,
+	/usr/share/fonts/X11/75dpi/:unscaled,
+	/usr/share/fonts/X11/Type1,
+	/usr/share/fonts/X11/100dpi,
+	/usr/share/fonts/X11/75dpi,
+	built-ins
+[    54.942] (==) ModulePath set to "/usr/lib/xorg/modules"
+[    54.942] (II) The server relies on udev to provide the list of input devices.
+	If no devices become available, reconfigure udev or disable AutoAddDevices.
+[    54.942] (II) Loader magic: 0x558a5e4c8f00
+[    54.942] (II) Module ABI versions:
+[    54.942] 	X.Org ANSI C Emulation: 0.4
+[    54.942] 	X.Org Video Driver: 25.2
+[    54.942] 	X.Org XInput driver : 24.4
+[    54.942] 	X.Org Server Extension : 10.0
+[    54.942] (++) using VT number 1
+
+[    54.944] (II) systemd-logind: took control of session /org/freedesktop/login1/session/c6
+[    54.945] (--) PCI:*(1@0:0:0) 10de:128b:1458:36f7 rev 161, Mem @ 0xa0000000/16777216, 0x4000000000/134217728, 0x4008000000/33554432, I/O @ 0x00004000/128, BIOS @ 0x????????/131072
+[    54.945] (II) LoadModule: "glx"
+[    54.945] (II) Loading /usr/lib/xorg/modules/extensions/libglx.so
+[    54.946] (II) Module glx: vendor="X.Org Foundation"
+[    54.946] 	compiled for 1.21.1.16, module version = 1.0.0
+[    54.946] 	ABI class: X.Org Server Extension, version 10.0
+[    55.412] (==) Matched nouveau as autoconfigured driver 0
+[    55.413] (==) Matched nv as autoconfigured driver 1
+[    55.413] (==) Matched modesetting as autoconfigured driver 2
+[    55.413] (==) Matched fbdev as autoconfigured driver 3
+[    55.413] (==) Matched vesa as autoconfigured driver 4
+[    55.413] (==) Assigned the driver to the xf86ConfigLayout
+[    55.413] (II) LoadModule: "nouveau"
+[    55.413] (II) Loading /usr/lib/xorg/modules/drivers/nouveau_drv.so
+[    55.413] (II) Module nouveau: vendor="X.Org Foundation"
+[    55.413] 	compiled for 1.21.1.15, module version = 1.0.18
+[    55.413] 	Module class: X.Org Video Driver
+[    55.413] 	ABI class: X.Org Video Driver, version 25.2
+[    55.413] (II) LoadModule: "nv"
+[    55.413] (WW) Warning, couldn't open module nv
+[    55.413] (EE) Failed to load module "nv" (module does not exist, 0)
+[    55.413] (II) LoadModule: "modesetting"
+[    55.413] (II) Loading /usr/lib/xorg/modules/drivers/modesetting_drv.so
+[    55.413] (II) Module modesetting: vendor="X.Org Foundation"
+[    55.413] 	compiled for 1.21.1.16, module version = 1.21.1
+[    55.413] 	Module class: X.Org Video Driver
+[    55.413] 	ABI class: X.Org Video Driver, version 25.2
+[    55.413] (II) LoadModule: "fbdev"
+[    55.413] (II) Loading /usr/lib/xorg/modules/drivers/fbdev_drv.so
+[    55.413] (II) Module fbdev: vendor="X.Org Foundation"
+[    55.413] 	compiled for 1.21.1.3, module version = 0.5.0
+[    55.413] 	Module class: X.Org Video Driver
+[    55.413] 	ABI class: X.Org Video Driver, version 25.2
+[    55.413] (II) LoadModule: "vesa"
+[    55.413] (II) Loading /usr/lib/xorg/modules/drivers/vesa_drv.so
+[    55.414] (II) Module vesa: vendor="X.Org Foundation"
+[    55.414] 	compiled for 1.21.1.15, module version = 2.6.0
+[    55.414] 	Module class: X.Org Video Driver
+[    55.414] 	ABI class: X.Org Video Driver, version 25.2
+[    55.414] (II) NOUVEAU driver Date:   Thu Nov 7 13:15:35 2024 -0500
+[    55.414] (II) NOUVEAU driver for NVIDIA chipset families :
+[    55.414] 	RIVA TNT            (NV04)
+[    55.414] 	RIVA TNT2           (NV05)
+[    55.414] 	GeForce 256         (NV10)
+[    55.414] 	GeForce 2           (NV11, NV15)
+[    55.414] 	GeForce 4MX         (NV17, NV18)
+[    55.414] 	GeForce 3           (NV20)
+[    55.414] 	GeForce 4Ti         (NV25, NV28)
+[    55.414] 	GeForce FX          (NV3x)
+[    55.414] 	GeForce 6           (NV4x)
+[    55.414] 	GeForce 7           (G7x)
+[    55.414] 	GeForce 8           (G8x)
+[    55.414] 	GeForce 9           (G9x)
+[    55.414] 	GeForce GTX 2xx/3xx (GT2xx)
+[    55.414] 	GeForce GTX 4xx/5xx (GFxxx)
+[    55.414] 	GeForce GTX 6xx/7xx (GKxxx)
+[    55.414] 	GeForce GTX 9xx     (GMxxx)
+[    55.414] 	GeForce GTX 10xx    (GPxxx)
+[    55.414] (II) modesetting: Driver for Modesetting Kernel Drivers: kms
+[    55.414] (II) FBDEV: driver for framebuffer: fbdev
+[    55.414] (II) VESA: driver for VESA chipsets: vesa
+[    55.880] (EE) [drm] Failed to open DRM device for pci:0000:01:00.0: -19
+[    55.880] (EE) open /dev/dri/card0: No such file or directory
+[    55.880] (WW) Falling back to old probe method for modesetting
+[    55.880] (EE) open /dev/dri/card0: No such file or directory
+[    55.880] (II) Loading sub module "fbdevhw"
+[    55.880] (II) LoadModule: "fbdevhw"
+[    55.880] (II) Loading /usr/lib/xorg/modules/libfbdevhw.so
+[    55.880] (II) Module fbdevhw: vendor="X.Org Foundation"
+[    55.880] 	compiled for 1.21.1.16, module version = 0.0.2
+[    55.880] 	ABI class: X.Org Video Driver, version 25.2
+[    55.880] (EE) Unable to find a valid framebuffer device
+[    55.880] (WW) Falling back to old probe method for fbdev
+[    55.880] (II) Loading sub module "fbdevhw"
+[    55.880] (II) LoadModule: "fbdevhw"
+[    55.880] (II) Loading /usr/lib/xorg/modules/libfbdevhw.so
+[    55.880] (II) Module fbdevhw: vendor="X.Org Foundation"
+[    55.880] 	compiled for 1.21.1.16, module version = 0.0.2
+[    55.880] 	ABI class: X.Org Video Driver, version 25.2
+[    55.880] (II) FBDEV(2): using default device
+[    55.880] vesa: Refusing to run, Framebuffer or dri device present
+[    55.880] (EE) Screen 0 deleted because of no matching config section.
+[    55.880] (II) UnloadModule: "modesetting"
+[    55.880] (EE) Screen 0 deleted because of no matching config section.
+[    55.880] (II) UnloadModule: "fbdev"
+[    55.880] (II) UnloadSubModule: "fbdevhw"
+[    55.880] (II) FBDEV(0): Creating default Display subsection in Screen section
+	"Default Screen Section" for depth/fbbpp 24/32
+[    55.880] (==) FBDEV(0): Depth 24, (==) framebuffer bpp 32
+[    55.880] (==) FBDEV(0): RGB weight 888
+[    55.880] (==) FBDEV(0): Default visual is TrueColor
+[    55.880] (==) FBDEV(0): Using gamma correction (1.0, 1.0, 1.0)
+[    55.880] (II) FBDEV(0): hardware: EFI VGA (video memory: 8640kB)
+[    55.880] (DB) xf86MergeOutputClassOptions unsupported bus type 0
+[    55.880] (II) FBDEV(0): checking modes against framebuffer device...
+[    55.880] (II) FBDEV(0): checking modes against monitor...
+[    55.880] (II) FBDEV(0): Virtual size is 1920x1080 (pitch 1920)
+[    55.880] (**) FBDEV(0):  Built-in mode "current": 207.4 MHz, 85.3 kHz, 77.2 Hz
+[    55.880] (II) FBDEV(0): Modeline "current"x0.0  207.38  1920 1952 2192 2432  1080 1084 1088 1104 -hsync -vsync -csync (85.3 kHz b)
+[    55.880] (==) FBDEV(0): DPI set to (96, 96)
+[    55.880] (II) Loading sub module "fb"
+[    55.880] (II) LoadModule: "fb"
+[    55.880] (II) Module "fb" already built-in
+[    55.880] (**) FBDEV(0): using shadow framebuffer
+[    55.880] (II) Loading sub module "shadow"
+[    55.880] (II) LoadModule: "shadow"
+[    55.880] (II) Loading /usr/lib/xorg/modules/libshadow.so
+[    55.880] (II) Module shadow: vendor="X.Org Foundation"
+[    55.880] 	compiled for 1.21.1.16, module version = 1.1.0
+[    55.880] 	ABI class: X.Org ANSI C Emulation, version 0.4
+[    55.880] (II) FBDEV(0): FBIOBLANK: Invalid argument (Screen blanking not supported by kernel - disabling)
+[    55.880] (==) FBDEV(0): Backing store enabled
+[    55.881] (==) FBDEV(0): DPMS enabled
+[    55.881] (II) Initializing extension Generic Event Extension
+[    55.881] (II) Initializing extension SHAPE
+[    55.881] (II) Initializing extension MIT-SHM
+[    55.881] (II) Initializing extension XInputExtension
+[    55.881] (II) Initializing extension XTEST
+[    55.881] (II) Initializing extension BIG-REQUESTS
+[    55.881] (II) Initializing extension SYNC
+[    55.881] (II) Initializing extension XKEYBOARD
+[    55.881] (II) Initializing extension XC-MISC
+[    55.881] (II) Initializing extension SECURITY
+[    55.881] (II) Initializing extension XFIXES
+[    55.881] (II) Initializing extension RENDER
+[    55.881] (II) Initializing extension RANDR
+[    55.882] (II) Initializing extension COMPOSITE
+[    55.882] (II) Initializing extension DAMAGE
+[    55.882] (II) Initializing extension MIT-SCREEN-SAVER
+[    55.882] (II) Initializing extension DOUBLE-BUFFER
+[    55.882] (II) Initializing extension RECORD
+[    55.882] (II) Initializing extension DPMS
+[    55.882] (II) Initializing extension Present
+[    55.882] (II) Initializing extension DRI3
+[    55.882] (II) Initializing extension X-Resource
+[    55.882] (II) Initializing extension XVideo
+[    55.882] (II) Initializing extension XVideo-MotionCompensation
+[    55.882] (II) Initializing extension SELinux
+[    55.882] (II) SELinux: Disabled on system
+[    55.882] (II) Initializing extension GLX
+[    55.882] (II) AIGLX: Screen 0 is not DRI2 capable
+[    55.902] (EE) 
+[    55.902] (EE) Backtrace:
+[    55.902] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.902] (EE) 0: /usr/lib/xorg/Xorg (?+0x0) [0x558a5e433c6d]
+[    55.902] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.902] (EE) 1: /lib/x86_64-linux-gnu/libc.so.6 (?+0x0) [0x7f58f8483df0]
+[    55.902] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.902] (EE) 2: /lib/x86_64-linux-gnu/libc.so.6 (?+0x0) [0x7f58f84d895c]
+[    55.903] (EE) 3: /lib/x86_64-linux-gnu/libc.so.6 (gsignal+0x12) [0x7f58f8483cc2]
+[    55.903] (EE) 4: /lib/x86_64-linux-gnu/libc.so.6 (abort+0x22) [0x7f58f846c4ac]
+[    55.903] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.903] (EE) 5: /lib/x86_64-linux-gnu/libc.so.6 (?+0x0) [0x7f58f846d291]
+[    55.903] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.903] (EE) 6: /lib/x86_64-linux-gnu/libc.so.6 (?+0x0) [0x7f58f84e2465]
+[    55.904] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.904] (EE) 7: /lib/x86_64-linux-gnu/libc.so.6 (?+0x0) [0x7f58f84e26ec]
+[    55.904] (EE) 8: /lib/x86_64-linux-gnu/libc.so.6 (__libc_free+0x158) [0x7f58f84e73d8]
+[    55.904] (EE) 9: /lib/x86_64-linux-gnu/libdrm.so.2 (drmFreeDevice+0x7d) [0x7f58f897213d]
+[    55.904] (EE) 10: /lib/x86_64-linux-gnu/libdrm.so.2 (drmFreeDevices+0x2e) [0x7f58f89722ae]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 11: /lib/x86_64-linux-gnu/libnvidia-egl-gbm.so.1 (?+0x0) [0x7f58f6b81f38]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 12: /lib/x86_64-linux-gnu/libEGL_nvidia.so.0 (?+0x0) [0x7f58f68adcb0]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 13: /lib/x86_64-linux-gnu/libEGL_nvidia.so.0 (?+0x0) [0x7f58f684cd9c]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 14: /lib/x86_64-linux-gnu/libEGL.so.1 (?+0x0) [0x7f58f6c7dad5]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 15: /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so (?+0x0) [0x7f58f6cdd3f3]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 16: /usr/lib/xorg/modules/extensions/libglx.so (?+0x0) [0x7f58f8124c73]
+[    55.905] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.905] (EE) 17: /usr/lib/xorg/modules/extensions/libglx.so (?+0x0) [0x7f58f8123adf]
+[    55.906] (EE) 18: /usr/lib/xorg/Xorg (_CallCallbacks+0x3c) [0x558a5e2bc1cc]
+[    55.906] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.906] (EE) 19: /usr/lib/xorg/Xorg (?+0x0) [0x558a5e3ee16f]
+[    55.906] (EE) 20: /usr/lib/xorg/Xorg (InitExtensions+0x89) [0x558a5e329c69]
+[    55.906] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.906] (EE) 21: /usr/lib/xorg/Xorg (?+0x0) [0x558a5e2baae8]
+[    55.906] (EE) unw_get_proc_name failed: no unwind info found [-10]
+[    55.906] (EE) 22: /lib/x86_64-linux-gnu/libc.so.6 (?+0x0) [0x7f58f846dca8]
+[    55.906] (EE) 23: /lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main+0x85) [0x7f58f846dd65]
+[    55.906] (EE) 24: /usr/lib/xorg/Xorg (_start+0x21) [0x558a5e2a3641]
+[    55.906] (EE) 
+[    55.906] (EE) 
+Fatal server error:
+[    55.906] (EE) Caught signal 6 (Aborted). Server aborting
+[    55.906] (EE) 
+[    55.906] (EE) 
+Please consult the The X.Org Foundation support 
+	 at http://wiki.x.org
+ for help. 
+[    55.906] (EE) Please also check the log file at "/var/log/Xorg.0.log" for additional information.
+[    55.906] (EE) 
+[    55.910] (EE) Server terminated with error (1). Closing log file.
