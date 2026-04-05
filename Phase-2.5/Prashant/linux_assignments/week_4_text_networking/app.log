@@ -1,5 +1,0 @@
-2026-04-05 10:10:01 INFO Service boot complete
-2026-04-05 10:15:44 ERROR Failed to connect to upstream API
-2026-04-05 10:20:19 INFO Retrying request
-2026-04-05 10:25:22 ERROR Invalid payload received
-2026-04-05 10:30:47 INFO Health check success
