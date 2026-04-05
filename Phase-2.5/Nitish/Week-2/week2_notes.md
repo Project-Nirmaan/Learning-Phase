@@ -1861,3 +1861,287 @@ After this topic, we can:
 * Reason about asynchronous OS behavior
 
 ---
+# Topic-4: Command Execution & PATH
+
+---
+
+## 1. Why This Topic Matters
+
+```
+Typing a command → triggers a full hardware–software interaction chain
+```
+
+This is not “running a program”.
+This is:
+
+* Parsing language (shell)
+* Process creation (kernel abstraction)
+* Memory replacement (execve)
+* Binary loading (ELF)
+
+---
+
+## 2. First-Principles Mental Model
+
+### Core Separation
+
+| Layer  | Responsibility |
+| ------ | -------------- |
+| Shell  | Interpretation |
+| Kernel | Execution      |
+
+---
+
+### Critical Invariant
+
+```
+Shell never executes programs
+Kernel always executes programs
+```
+
+Shell only *requests* execution via system calls.
+
+---
+
+## 3. Full Execution Pipeline (Precise)
+
+```
+User types command
+↓
+Shell reads input (stdin)
+↓
+Lexical analysis (tokenization)
+↓
+Alias expansion (text substitution)
+↓
+Parsing (syntax tree creation)
+↓
+Command resolution
+↓
+fork() → create child process
+↓
+execve() → replace child memory
+↓
+Kernel loads binary (ELF)
+↓
+Program starts at entry point
+```
+
+---
+
+## 4. Command Resolution (Deeper View)
+
+Shell must answer:
+
+```
+“What does this token represent?”
+```
+
+### Resolution Order (Strict)
+
+```
+1. Alias
+2. Function
+3. Built-in
+4. External binary (PATH search)
+```
+
+---
+
+### Why This Order Exists
+
+* Alias → user convenience
+* Function → programmable behavior
+* Built-in → must modify shell state
+* Binary → external execution
+
+---
+
+## 5. Built-in vs External (Critical Distinction)
+
+### Built-in Example: cd
+
+Why not external?
+
+Because:
+
+```
+cd must change current process state
+```
+
+If implemented as external:
+
+```
+child process changes directory → exits → useless
+```
+
+---
+
+### Key Insight
+
+```
+Anything that modifies shell state MUST be builtin
+```
+
+Examples:
+
+* cd
+* export
+* alias
+* jobs
+
+---
+
+### External Commands
+
+Examples:
+
+* ls
+* cat
+* grep
+
+These:
+
+* Do not modify shell state
+* Can safely run in child process
+
+---
+
+## 6. PATH – Not Just a Variable
+
+### Definition
+
+```
+PATH = ordered search list for executables
+```
+
+---
+
+### Example
+
+```
+PATH=/usr/local/bin:/usr/bin:/bin
+```
+
+---
+
+### Search Algorithm
+
+For command `ls`:
+
+```
+for dir in PATH:
+    if dir/ls exists and executable:
+        execute it
+        stop
+```
+
+---
+
+### Key Insight
+
+```
+PATH defines execution priority
+```
+
+---
+
+## 7. PATH as a Security Boundary
+
+### Dangerous Configuration
+
+```
+PATH=.:$PATH
+```
+
+Why dangerous?
+
+Because:
+
+```
+./ls overrides /bin/ls
+```
+
+---
+
+### Real Risk
+
+* Malicious binaries
+* Privilege escalation
+* PATH hijacking attacks
+
+---
+
+### Engineering Rule
+
+```
+Never trust PATH blindly
+```
+
+---
+
+## 8. fork() – Process Creation
+
+### What fork() Actually Does
+
+Creates a new process with:
+
+* Same code
+* Same memory (copy-on-write)
+* Same file descriptors
+
+---
+
+### After fork()
+
+Two processes exist:
+
+```
+Parent (shell)
+Child (future command)
+```
+
+---
+
+### Key Insight
+
+```
+fork duplicates context, not execution purpose
+```
+
+---
+
+## 9. execve() – The Most Important Boundary
+
+### Definition
+
+```
+execve(path, argv, envp)
+```
+
+---
+
+### What It Does
+
+```
+DESTROYS current process memory
+REPLACES with new program
+```
+
+---
+
+### Important Consequences
+
+* No return on success
+* Same PID, new program
+* Stack, heap, code replaced
+
+---
+
+### Key Insight
+
+```
+execve transforms process identity without changing PID
+```
+
+---
