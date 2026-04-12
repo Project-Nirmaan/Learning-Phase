@@ -279,3 +279,133 @@ Scheduler runs only runnable processes
 ```
 
 ---
+
+# 10. System Call Tracing
+
+## 10.1 Experiment
+
+```bash
+strace ls
+```
+
+## 10.2 Observations
+
+Key system calls:
+
+* `execve()` → process execution
+* `openat()` → file access
+* `read()` → data fetch
+* `write()` → output to terminal
+* `mmap()` → memory mapping
+
+## 10.3 Analysis
+
+### Execution Flow
+
+```
+User command (ls)
+→ shell resolves path
+→ execve()
+→ kernel loads binary
+→ process executes syscalls
+→ kernel interacts with filesystem
+→ output returned to user
+```
+
+### Key Insight
+
+```
+User space NEVER directly accesses hardware
+All interaction happens via system calls
+```
+
+---
+
+# 11. Key Learnings
+
+## 11.1 Process Model
+
+```
+Process = execution context + kernel-managed resources
+```
+
+## 11.2 Scheduling
+
+* Most processes are waiting
+* CPU time is allocated dynamically
+
+## 11.3 Signals
+
+* Core mechanism for process control
+* Delivered by kernel
+
+## 11.4 Shell vs Kernel Boundary
+
+```
+Shell → user interface
+Kernel → system authority
+```
+
+## 11.5 Filesystem Behavior
+
+* Name and data are separate
+* File lifetime depends on references
+
+## 11.6 System Calls
+
+```
+System calls = only legal interface to kernel
+```
+
+---
+
+# 12. Final Concept Map
+
+```
+User Command
+    ↓
+Shell (parsing + PATH resolution)
+    ↓
+execve()
+    ↓
+Kernel
+    ↓
+Process creation
+    ↓
+Scheduler
+    ↓
+Execution
+    ↓
+System Calls (read, write, open)
+    ↓
+Hardware interaction
+```
+
+---
+
+# 13. Conclusion
+
+This assignment established a **practical understanding of how a Linux system operates internally**:
+
+* Processes are not programs, but **kernel-managed execution environments**
+* CPU scheduling is **selective and demand-driven**
+* Signals are the **primary control interface for processes**
+* The shell provides a **layer of abstraction**, but real control lies in the kernel
+* Filesystem and process models are deeply interconnected
+* System calls form the **strict boundary between user space and kernel space**
+
+---
+
+# 14. Improvements
+
+* `pstree` and `killall` were not available → need installation (`psmisc`)
+* File descriptor experiment could be improved with:
+
+  ```bash
+  tail -f file.txt
+  ```
+* More structured logging for process state transitions can be added
+
+---
+
+**End of Report**
