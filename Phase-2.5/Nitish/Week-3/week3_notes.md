@@ -325,3 +325,324 @@ It confirms what is happening at the system call level.
 * Forgetting to close file descriptors can lead to leaks
 
 ---
+
+# Topic-3: Pipes & Pipelines
+
+---
+
+## 1. The Problem I am Solving
+
+I already know:
+
+* Programs write to stdout (FD 1)
+* Programs read from stdin (FD 0)
+
+Now the question becomes:
+
+How do I connect one program’s output directly into another program’s input without using files?
+
+---
+
+## 2. Basic Idea of a Pipe
+
+Using a pipe:
+
+```
+cmd1 | cmd2
+```
+
+means:
+
+* stdout of cmd1 becomes stdin of cmd2
+
+There is no intermediate file involved.
+
+---
+
+## 3. Approach and Thinking
+
+```
+cmd1 → cmd2
+```
+
+More accurately:
+
+```
+cmd1 (FD 1) → pipe → cmd2 (FD 0)
+```
+
+The shell sets up this connection.
+
+---
+
+## 4. Experiment: Basic Pipeline
+
+```
+echo "hello world" | wc -w
+```
+
+Output:
+
+2
+
+Explanation:
+
+* echo writes to stdout
+* wc reads from stdin
+
+---
+
+## 5. Comparing with File-Based Flow
+
+```
+echo "hello world" > file.txt
+wc -w < file.txt
+```
+
+Same result, but:
+
+* file-based → disk involved
+* pipe → in-memory stream
+
+---
+
+## 6. Pipelines Run Concurrently
+
+```
+yes | head -n 5
+```
+
+Observation:
+
+* yes produces infinite output
+* head stops after 5 lines
+* yes gets terminated automatically
+
+This only works because both processes run at the same time.
+
+---
+
+## 7. Order vs Dependency
+
+```
+sleep 5 | echo done
+```
+
+Output appears immediately.
+
+Reason:
+
+* echo does not depend on input
+* it executes independently
+
+Pipeline behavior depends on data dependency, not command order.
+
+---
+
+## 8. Multi-Stage Pipelines
+
+```
+ps aux | grep bash | wc -l
+```
+
+Flow:
+
+* ps generates data
+* grep filters it
+* wc counts it
+
+Each stage is a separate process.
+
+---
+
+## 9. stderr is NOT part of pipe by default
+
+```
+ls non_existing | grep something
+```
+
+Error still appears on terminal.
+
+Because:
+
+* pipe only connects stdout
+
+To include stderr:
+
+```
+ls non_existing 2>&1 | grep something
+```
+
+---
+
+## 10. Combining Pipes with Redirection
+
+```
+ls | grep txt > out.txt
+```
+
+Flow:
+
+ls → grep → file
+
+---
+
+## 11. Debugging Pipelines
+
+Break pipeline into parts:
+
+```
+ps aux
+ps aux | grep bash
+```
+
+Insert cat:
+
+```
+ps aux | cat | grep bash
+```
+
+This helps observe intermediate data.
+
+---
+
+## 12. Subshell Behavior
+
+```
+echo hello | read var
+echo $var
+```
+
+Result:
+
+var is empty
+
+Reason:
+
+* each pipeline stage runs in a subshell
+* variables do not propagate back to parent shell
+
+---
+
+## 13. Buffering Behavior
+
+Some programs buffer output when used in pipelines.
+
+Example:
+
+```
+python script.py | grep something
+```
+
+Output may be delayed.
+
+Reason:
+
+* stdout is not terminal → buffering enabled
+
+---
+
+## 14. tee Command
+
+```
+echo "hello" | tee file.txt
+```
+
+Writes to:
+
+* file
+* stdout
+
+Used when output needs to be both saved and passed forward.
+
+---
+
+## 15. xargs Command
+
+```
+echo "file.txt" | xargs cat
+```
+
+Converts stream input into command arguments.
+
+Useful when commands expect arguments instead of stdin.
+
+---
+
+## 16. Blocking Behavior
+
+If producer is faster than consumer:
+
+* producer blocks
+
+If consumer is faster:
+
+* waits for data
+
+This keeps system stable.
+
+---
+
+## 17. Broken Pipe
+
+```
+yes | head -n 1
+```
+
+* head exits early
+* yes tries writing
+* gets terminated
+
+---
+
+## 18. Failure Handling
+
+```
+false | true
+```
+
+Exit status:
+
+```
+echo $?
+```
+
+Returns success because only last command is considered.
+
+To handle properly:
+
+```
+set -o pipefail
+```
+
+---
+
+## 19. Edge Cases
+
+* Subshell variable loss
+* Unexpected buffering
+* Ignored errors in pipelines
+* Infinite producers
+* Hanging due to improper input/output expectations
+
+---
+
+# Final Conclusion
+
+```
+cmd1 | cmd2 | cmd3
+```
+
+Is actually:
+
+```
+Process1 → pipe → Process2 → pipe → Process3
+```
+
+Where:
+
+* each process runs independently
+* shell connects file descriptors
+* kernel manages data flow
+
+---
