@@ -857,3 +857,261 @@ They allow:
 Without exit codes, the shell could not function as an orchestration layer.
 
 ---
+
+# Topic-5: Observing Internals
+
+---
+
+## 1. What Problem I Am Solving
+
+The operating system hides complexity through abstractions.
+
+However, debugging and systems development require visibility into:
+
+* what the kernel is doing
+* how processes interact
+* how data flows through the system
+
+So I need tools and methods to observe internal behavior.
+
+---
+
+## 2. Core Idea
+
+Observability means:
+
+```
+Mapping high-level commands → low-level system behavior
+```
+
+Instead of guessing what happens, I inspect real execution.
+
+---
+
+## 3. Layers of Observation
+
+Different tools expose different layers of the system.
+
+| Tool   | What it shows               |
+| ------ | --------------------------- |
+| strace | System calls                |
+| ps/top | Process and scheduler state |
+| lsof   | File descriptor usage       |
+| /proc  | Kernel data structures      |
+| dmesg  | Kernel and hardware events  |
+
+---
+
+## 4. Observing System Calls using strace
+
+```
+strace ls
+```
+
+This reveals:
+
+* `open()`
+* `read()`
+* `write()`
+* `close()`
+
+This confirms that commands interact with the kernel only through system calls.
+
+---
+
+## 5. Observing Redirection Internals
+
+```
+strace ls > out.txt
+```
+
+Observed behavior:
+
+* `open("out.txt")`
+* `dup2()`
+* `execve("ls")`
+
+This validates that redirection is implemented by modifying file descriptors before execution.
+
+---
+
+## 6. Observing File Descriptors
+
+```
+ls /proc/$$/fd
+```
+
+This shows the file descriptor table of the current shell process.
+
+Mapping:
+
+* 0 → stdin
+* 1 → stdout
+* 2 → stderr
+
+These are real kernel-maintained resources.
+
+---
+
+## 7. Observing Process State
+
+```
+ps
+
+top
+```
+
+These tools expose:
+
+* process hierarchy
+* CPU usage
+* scheduling state
+
+Most processes are not running; they are waiting.
+
+---
+
+## 8. Observing File Usage
+
+```
+lsof
+```
+
+This shows:
+
+```
+process → file descriptors → files/inodes
+```
+
+This reinforces the idea that everything is treated as a file.
+
+---
+
+## 9. Observing Kernel Logs
+
+```
+dmesg
+```
+
+This exposes:
+
+* hardware interactions
+* driver messages
+* kernel-level events
+
+---
+
+## 10. Observing Pipelines in Action
+
+```
+echo hello | sleep 5
+```
+
+Observation:
+
+* Multiple processes run concurrently
+* Data flows through kernel-managed pipes
+
+---
+
+## 11. Broken Pipe Behavior
+
+```
+yes | head -n 1
+```
+
+* `head` exits early
+* `yes` receives SIGPIPE
+* Kernel terminates the writer
+
+---
+
+## 12. Zombie Processes
+
+A zombie process exists when:
+
+* process has exited
+* parent has not yet collected exit status
+
+This directly links to exit code handling.
+
+---
+
+## 13. File Lifetime Behavior
+
+```
+rm file
+```
+
+* Removes directory entry
+* Does not immediately remove data if file is open
+
+File exists as long as:
+
+* link count > 0 OR
+* file descriptor is open
+
+---
+
+## 14. Core Mental Model
+
+Observability reveals that:
+
+* commands are processes
+* processes interact via file descriptors
+* kernel mediates all interactions
+
+---
+
+## 15. Engineering Insight
+
+Debugging in Linux is not about guessing.
+
+It is about:
+
+* inspecting state
+* tracing execution
+* validating assumptions against real system behavior
+
+---
+
+# Final Synthesis
+
+---
+
+## Execution Flow
+
+```
+Shell parses command
+→ fork()
+→ modify file descriptors (if needed)
+→ exec()
+→ kernel executes process
+→ process exits with status
+→ shell retrieves exit code
+→ shell decides next action
+```
+
+---
+
+## Key Understanding
+
+* Exit codes enable control flow
+* File descriptors enable data flow
+* Pipes enable inter-process communication
+* Observability tools reveal actual system behavior
+
+---
+
+## My Current Understanding
+
+I now see the shell as an orchestration layer that:
+
+* creates processes
+* connects them via file descriptors
+* observes their completion
+* reacts based on exit codes
+
+The kernel performs all actual execution and resource management.
+
+---
