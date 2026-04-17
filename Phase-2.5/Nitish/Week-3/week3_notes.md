@@ -646,3 +646,214 @@ Where:
 * kernel manages data flow
 
 ---
+
+# Topic-4: Exit Codes & Conditional Execution
+
+---
+
+## 1. What Problem I Am Solving
+
+When a process finishes execution, the system must communicate whether it succeeded or failed.
+
+Without this mechanism:
+
+* Automation would not be possible
+* Scripts would execute blindly
+* There would be no reliable way to make decisions based on outcomes
+
+So the system needs a minimal, consistent way to propagate execution results.
+
+---
+
+## 2. Core Idea
+
+A process communicates its result to the operating system using an exit status.
+
+Internally:
+
+* A process calls `exit(status)`
+* The kernel stores this status in the process structure
+* The parent retrieves it using `wait()` / `waitpid()`
+
+This is a kernel-level contract, not a shell feature.
+
+---
+
+## 3. Convention Used by UNIX Systems
+
+```
+0   → success
+≠0  → failure or alternate outcome
+```
+
+This is a convention adopted across user-space programs.
+
+Different programs may assign different meanings to non-zero values.
+
+---
+
+## 4. Mental Model
+
+Command execution produces two independent outputs:
+
+* Human-facing output → stdout / stderr
+* Machine-facing output → exit code
+
+The shell does not interpret printed output for logic.
+It relies entirely on exit codes.
+
+---
+
+## 5. Observing Exit Codes
+
+```
+echo $?
+```
+
+This retrieves the exit status of the last executed command.
+
+This value is maintained by the shell and updated after every command execution.
+
+---
+
+## 6. Process Lifecycle Connection
+
+Execution flow:
+
+```
+fork()
+  → exec()
+  → run
+  → exit(status)
+  → waitpid() collects status
+```
+
+The shell is simply acting as a parent process that:
+
+* spawns children
+* waits for them
+* uses their exit codes
+
+---
+
+## 7. Conditional Execution in Shell
+
+The shell converts exit codes into control flow.
+
+### AND Operator
+
+```
+cmd1 && cmd2
+```
+
+* `cmd2` executes only if `cmd1` returns success (0)
+
+---
+
+### OR Operator
+
+```
+cmd1 || cmd2
+```
+
+* `cmd2` executes only if `cmd1` fails (non-zero)
+
+---
+
+### Combined Logic
+
+```
+make && echo "Build success" || echo "Build failed"
+```
+
+The shell chains execution based on exit code propagation.
+
+---
+
+## 8. Behavior is Short-Circuit Based
+
+* `&&` stops on first failure
+* `||` stops on first success
+
+This mirrors boolean logic evaluation.
+
+---
+
+## 9. Edge Cases and Observations
+
+### Non-zero Does Not Always Mean Error
+
+Example:
+
+```
+grep "pattern" file
+```
+
+* `0` → match found
+* `1` → no match
+
+The system is working correctly, but semantics differ.
+
+---
+
+### Pipeline Exit Behavior
+
+```
+cmd1 | cmd2
+```
+
+Default behavior:
+
+* Exit status = exit status of `cmd2`
+
+Upstream failures are ignored.
+
+---
+
+### Enabling Accurate Failure Propagation
+
+```
+set -o pipefail
+```
+
+Now:
+
+* Pipeline fails if any command fails
+
+---
+
+### Subshell Interaction
+
+```
+echo hello | read var
+```
+
+* `read` runs in a subshell
+* Variable changes do not propagate to parent shell
+
+---
+
+### Command Substitution Behavior
+
+```
+var=$(false)
+```
+
+* Exit code belongs to assignment context
+* Can lead to confusion if not checked explicitly
+
+---
+
+## 10. Engineering Insight
+
+Exit codes form a minimal signaling mechanism between processes.
+
+They allow:
+
+* composability
+* automation
+* predictable control flow
+
+Without exit codes, the shell could not function as an orchestration layer.
+
+---
